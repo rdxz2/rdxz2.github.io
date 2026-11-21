@@ -1,0 +1,186 @@
+---
+import { entries, roles, type Role } from '../data/timeline';
+
+// Quarter index: 2015 Q1 = 0.
+const q = (s: string) => (Number(s.slice(0, 4)) - 2015) * 4 + (Number(s.slice(5)) - 1);
+
+// Row packing: each entry goes in the first row whose last bar ended before it starts.
+const sorted = [...entries].sort((a, b) => q(a.start) - q(b.start) || q(a.end) - q(b.end));
+const rowEnds: number[] = [];
+const placed = sorted.map((e) => {
+  const row = rowEnds.findIndex((end) => end < q(e.start));
+  if (row === -1) {
+    rowEnds.push(q(e.end));
+    return { ...e, row: rowEnds.length - 1 };
+  }
+  rowEnds[row] = q(e.end);
+  return { ...e, row };
+});
+
+const rows = rowEnds.length;
+const H = rows * 14;
+const min = Math.min(...entries.map((e) => q(e.start)));
+const max = Math.max(...entries.map((e) => q(e.end))) + 1;
+const span = max - min;
+const xOf = (quarter: number) => ((quarter - min) / span) * 1000;
+const lastYear = 2015 + Math.floor((max - 1) / 4);
+const years = Array.from({ length: lastYear - 2015 + 1 }, (_, i) => 2015 + i);
+const roleKeys = Object.keys(roles) as Role[];
+---
+
+<div class="overview-strip wipe-on-scroll relative" role="group" aria-label="Career overview">
+  <svg class="block w-full" viewBox={`0 0 1000 ${H}`} preserveAspectRatio="none" style={`height:${H}px`}>
+    {
+      years.map((Y) => (
+        <line
+          x1={xOf((Y - 2015) * 4)}
+          x2={xOf((Y - 2015) * 4)}
+          y1="0"
+          y2={H}
+          style="stroke:var(--line)"
+          vector-effect="non-scaling-stroke"
+          stroke-width="1"
+        />
+      ))
+    }
+    {
+      placed.map((e) => {
+        const h = e.flagship ? 12 : 7;
+        const w = Math.max(xOf(q(e.end) + 1) - xOf(q(e.start)) - 2, 4);
+        return (
+          <a
+            href={`#entry-${e.id}`}
+            data-entry={e.id}
+            aria-label={`${e.title} (${e.date})`}
+            data-title={e.title}
+            data-meta={`${e.date} · ${roles[e.role].label}`}
+            data-summary={e.summary}
+          >
+            <rect class="bar" rx="1" x={xOf(q(e.start))} y={e.row * 14 + (14 - h) / 2} width={w} height={h} data-role={e.role} />
+          </a>
+        );
+      })
+    }
+  </svg>
+
+  <div class="strip-tip" aria-hidden="true">
+    <p class="tip-meta figure text-xs text-faint"></p>
+    <p class="tip-title mt-0.5 font-semibold leading-snug"></p>
+    <p class="tip-summary mt-1 text-sm text-muted leading-snug"></p>
+  </div>
+
+  <div class="relative mt-1 h-5 text-xs text-faint figure">
+    {
+      years.map((Y) => (
+        <span
+          class:list={['absolute top-0 whitespace-nowrap', Y % 2 === 1 && Y !== lastYear && 'max-sm:hidden']}
+          style={`left:${(((Y - 2015) * 4 - min) / span) * 100}%`}
+        >
+          {Y}
+        </span>
+      ))
+    }
+  </div>
+
+  <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
+    {
+      roleKeys.map((r) => (
+        <span data-role={r} class="inline-flex items-center gap-1.5">
+          <span class="glyph" aria-hidden="true"></span>
+          {roles[r].label}
+        </span>
+      ))
+    }
+    <span class="text-faint">Taller bars mark flagship projects.</span>
+  </div>
+</div>
+
+<style>
+  .overview-strip .bar {
+    fill: var(--blue);
+  }
+  .overview-strip .bar[data-role='co-owned'] {
+    opacity: 0.6;
+  }
+  .overview-strip .bar[data-role='learned'] {
+    fill: color-mix(in srgb, var(--accent-fill) 20%, transparent);
+    stroke: var(--accent-fill);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+  .overview-strip .bar[data-role='retired'] {
+    fill: var(--grey);
+  }
+  /* Hover card: one shared element, moved and filled by the script below */
+  .strip-tip {
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    width: min(20rem, 100%);
+    padding: 0.6rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--fg) 14%, transparent);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .strip-tip.show {
+    opacity: 1;
+    visibility: visible;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .strip-tip {
+      transition: opacity 120ms ease, visibility 120ms;
+    }
+  }
+  .overview-strip a:hover .bar,
+  .overview-strip a:focus-visible .bar {
+    opacity: 1;
+    stroke: var(--fg);
+    stroke-width: 2;
+  }
+</style>
+
+<script>
+  // Hover or focus a bar to see what it is: title, date, role and the one-line summary.
+  const strip = document.querySelector<HTMLElement>('.overview-strip')!;
+  const tip = strip.querySelector<HTMLElement>('.strip-tip')!;
+  const showTip = (link: SVGAElement) => {
+    tip.querySelector('.tip-meta')!.textContent = link.dataset.meta!;
+    tip.querySelector('.tip-title')!.textContent = link.dataset.title!;
+    tip.querySelector('.tip-summary')!.textContent = link.dataset.summary!;
+    const box = strip.getBoundingClientRect();
+    const bar = link.getBoundingClientRect();
+    const gap = 8;
+    // Centre over the bar, kept inside the strip; above it unless that runs off the top of the screen.
+    const left = Math.min(Math.max(bar.left + bar.width / 2 - tip.offsetWidth / 2, box.left), box.right - tip.offsetWidth);
+    const above = bar.top - tip.offsetHeight - gap >= 0;
+    const top = above ? bar.top - tip.offsetHeight - gap : bar.bottom + gap;
+    tip.style.left = `${left - box.left}px`;
+    tip.style.top = `${top - box.top}px`;
+    tip.classList.add('show');
+  };
+  const hideTip = () => tip.classList.remove('show');
+  strip.querySelectorAll<SVGAElement>('a[data-entry]').forEach((link) => {
+    // Touch taps go straight to the entry, so no card there.
+    link.addEventListener('pointerenter', (e) => e.pointerType !== 'touch' && showTip(link));
+    link.addEventListener('pointerleave', hideTip);
+    link.addEventListener('focus', () => showTip(link));
+    link.addEventListener('blur', hideTip);
+    link.addEventListener('click', hideTip);
+  });
+
+  // Clicking a bar opens its entry. The page script clears filters that hide it.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-entry]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const id = link.dataset.entry;
+      requestAnimationFrame(() => {
+        const details = document.querySelector<HTMLDetailsElement>(`#entry-${id} details`);
+        if (details) details.open = true;
+      });
+    });
+  });
+</script>

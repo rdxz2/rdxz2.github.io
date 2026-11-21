@@ -1,0 +1,179 @@
+{
+  "as_of": "2026-11-19",
+  "metrics": {
+    "aws-bill-drop": {
+      "display": "−98.6%",
+      "label": "data-platform AWS spend after moving to Google Cloud",
+      "method": "Monthly AWS invoices for the data account, peak (July 2023) vs October 2026 (indexed 100 → 1.4), after migrating data workloads to Google Cloud.",
+      "window": "Jul 2023 vs Oct 2026",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "bars",
+        "values": [
+          100,
+          1.4
+        ],
+        "labels": [
+          "Jul 2023",
+          "Oct 2026"
+        ],
+        "caption": "Monthly data AWS spend, indexed to 100 at peak"
+      }
+    },
+    "bq-slot-cut": {
+      "display": "−50%",
+      "label": "reserved BigQuery slot capacity after workload split",
+      "method": "Baseline BigQuery slot reservation before vs after moving BI traffic to on-demand billing with a daily scan quota (indexed 100 → 50).",
+      "window": "2025 Q2",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "bars",
+        "values": [
+          100,
+          50
+        ],
+        "labels": [
+          "Before",
+          "After"
+        ],
+        "caption": "Reserved BigQuery slot capacity, indexed to 100"
+      }
+    },
+    "warehouse-compression": {
+      "display": "−83.4%",
+      "label": "billable warehouse storage footprint via physical compression",
+      "method": "Physical (compressed) footprint vs logical bytes in BigQuery table-storage metadata across the data warehouse (indexed 100 logical → 16.5 physical, ~6× compression).",
+      "window": "point in time",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "nested",
+        "outer": 100,
+        "inner": 16.5,
+        "outerLabel": "100 logical bytes (indexed)",
+        "innerLabel": "16.5 physical (compressed)",
+        "caption": "Logical size vs. compressed footprint, by area"
+      }
+    },
+    "model-pruning": {
+      "display": "−71%",
+      "label": "AutoGluon model artifact size after ensemble pruning",
+      "method": "Combined artifact size across four production AutoGluon models before vs after pruning sub-models unused by the final ensemble (indexed 100 → 29; up to −83% on individual ensembles), with identical predictions on validation samples.",
+      "window": "2026 Q4",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "bars",
+        "values": [
+          100,
+          29
+        ],
+        "labels": [
+          "Full package",
+          "Pruned ensemble"
+        ],
+        "caption": "Combined AutoGluon model artifact footprint, indexed to 100"
+      }
+    },
+    "model-release-quarters": {
+      "display": "90.4%",
+      "label": "of quarters since joining JULO with a new ML model version going live",
+      "method": "Quarters from 2021 Q4 to 2026 Q4 in which at least one new model version made its first production prediction, from the company's inventory of every production model version (19 of 21 quarters; real-time in 17, batch in 15). Placeholder and rule-only versions are excluded.",
+      "window": "2021 Q4 to 2026 Q4",
+      "as_of": "2026-11-21"
+    },
+    "medallion-docs": {
+      "display": "86.6%",
+      "label": "of medallion warehouse columns documented in code",
+      "method": "Share of declared columns across the medallion dbt manifest that carry a non-empty description pushed into BigQuery table metadata.",
+      "window": "point in time",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "waffle",
+        "total": 100,
+        "on": 87,
+        "caption": "86.6% of declared warehouse columns documented (filled)"
+      }
+    },
+    "semantic-dashboard-share": {
+      "display": "94.1%",
+      "label": "of governed semantic-layer queries run via saved dashboards",
+      "method": "Share of non-SQL Metabase query executions against the semantic-layer gold tables served through saved questions and dashboards (the remaining 5.9% are ad-hoc visual explorations, all without writing SQL).",
+      "window": "2026-09-23 to 2026-11-17",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "waffle",
+        "total": 100,
+        "on": 94,
+        "caption": "94.1% via saved questions & dashboards, 5.9% ad-hoc visual queries"
+      }
+    },
+    "cdc-cloud-migration": {
+      "display": "90.7%",
+      "label": "of registered CDC tables actively streaming to BigQuery",
+      "method": "Share of tables in the CDC registry actively replicated from Postgres logical replication slots into BigQuery on Google Cloud, with 100% of streamers migrated off Alibaba Cloud.",
+      "window": "point in time",
+      "as_of": "2026-11-17",
+      "viz": {
+        "type": "waffle",
+        "total": 100,
+        "on": 91,
+        "caption": "90.7% of registered CDC tables active (filled)"
+      }
+    },
+    "underwriting-cutover": {
+      "display": "100%",
+      "label": "of real-time underwriting traffic migrated off the legacy monolith",
+      "method": "Share of production loan-application scoring traffic routed through the new event-driven orchestrator and containerised model services after shadow validation and proxy cutover.",
+      "window": "since 2026-09",
+      "as_of": "2026-11-17"
+    },
+    "deploy-coverage": {
+      "display": "88%",
+      "label": "of the data team's service repos deploy through the self-service deploy platform",
+      "method": "Service repos registered in the central deployment registry out of the data team's repos that run a service (8 of 9). The remaining one is a legacy service still on another team's pipeline.",
+      "window": "point in time",
+      "as_of": "2026-11-22",
+      "viz": {
+        "type": "waffle",
+        "total": 100,
+        "on": 88,
+        "caption": "88 of every 100 service repos deploy through the platform (filled)"
+      }
+    },
+    "metabase-managed-access": {
+      "display": "100%",
+      "label": "of Metabase access sits in groups the self-service data-ops platform creates and manages",
+      "method": "Group memberships of active non-admin Metabase users, in groups the data-ops platform provisions, out of all their memberships beyond the default group, from Metabase's own database.",
+      "window": "point in time",
+      "as_of": "2026-11-22",
+      "viz": {
+        "type": "waffle",
+        "total": 100,
+        "on": 100,
+        "caption": "Every Metabase access group in use is platform-managed"
+      }
+    },
+    "two-person-team": {
+      "display": "40.6%",
+      "label": "of my time at JULO with a data engineering team of just two engineers",
+      "method": "Days since I joined on which no third data engineer was on the team. Each former data engineer's time on the team is estimated from their first and last commit in the platform's main repository. People usually join before their first commit and leave after their last, so the true share is likely lower.",
+      "window": "2021-10-13 to 2026-11-21",
+      "as_of": "2026-11-21"
+    },
+    "commit-share": {
+      "display": "43%",
+      "label": "of the data team's code changes since I joined are mine",
+      "method": "Non-merge commits across the 11 repositories the data team owns, from git history on all branches. Bots and shared machine accounts are excluded, each person's commit identities are merged, and my personal notebook repository is left out. The rest: 46.5% by other data engineers, past and present, and 10.3% by other teams.",
+      "window": "2021-10-13 to 2026-11-21",
+      "as_of": "2026-11-21",
+      "viz": {
+        "type": "stack",
+        "segments": [
+          { "label": "Me", "value": 43.0 },
+          { "label": "Other data engineers", "value": 46.5 },
+          { "label": "Other teams", "value": 10.3 }
+        ],
+        "caption": "Share of non-merge commits to the data team's repositories, by author"
+      }
+    }
+  }
+}

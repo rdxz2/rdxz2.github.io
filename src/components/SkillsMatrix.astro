@@ -1,0 +1,75 @@
+---
+import { entries, skillGroups } from '../data/timeline';
+
+const yearOf = (s: string) => Number(s.slice(0, 4));
+const years = Array.from(
+  { length: Math.max(...entries.map((e) => yearOf(e.end))) - 2018 + 1 },
+  (_, i) => 2018 + i,
+);
+const usedIn = (skill: string) => entries.filter((e) => e.skills?.includes(skill));
+const countIn = (skill: string, Y: number) =>
+  usedIn(skill).filter((e) => yearOf(e.start) <= Y && Y <= yearOf(e.end)).length;
+// Index is the entry count, capped at 3. Opacity goes through --shade so the scroll fill in global.css can scale it.
+const shade = [
+  'background: transparent; box-shadow: inset 0 0 0 1px var(--line)',
+  'background: var(--blue); --shade: .4',
+  'background: var(--blue); --shade: .7',
+  'background: var(--blue)',
+];
+---
+
+<div class="skills-matrix" role="group" aria-label="Skills, by years used in the journey">
+  {
+    skillGroups.map((g) => (
+      <>
+        <h3 class="display text-xl mt-8 first:mt-0">{g.group}</h3>
+        <div
+          class="skills-grid grid items-center gap-[3px]"
+          style={`grid-template-columns: minmax(7rem, 13rem) repeat(${years.length}, 14px) 2rem`}
+        >
+          <span />
+          {years.map((Y) => (
+            <span class="text-[10px] text-faint figure text-center">{String(Y).slice(2)}</span>
+          ))}
+          <span />
+          {g.items.map((s) => (
+            <>
+              <button
+                type="button"
+                class="skill-btn cursor-pointer text-left text-sm text-muted hover:text-fg"
+                data-skill={s}
+                aria-pressed="false"
+              >
+                {s}
+              </button>
+              {years.map((Y) => {
+                const n = countIn(s, Y);
+                return (
+                  <span
+                    class="cell block h-[14px] w-[14px] rounded-[1px]"
+                    style={
+                      // Filled cells get a random point (0–0.85) in the grid's scroll fill at which they appear
+                      n > 0 ? `${shade[Math.min(n, 3)]}; --t: ${(Math.random() * 0.85).toFixed(2)}` : shade[0]
+                    }
+                    title={`${s}, ${Y}: ${n} entr${n === 1 ? 'y' : 'ies'}`}
+                  ></span>
+                );
+              })}
+              <span class="text-xs text-faint figure">{usedIn(s).length}</span>
+            </>
+          ))}
+        </div>
+      </>
+    ))
+  }
+</div>
+
+<style>
+  .skill-btn[aria-pressed='true'] {
+    color: var(--fg);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.2em;
+  }
+</style>

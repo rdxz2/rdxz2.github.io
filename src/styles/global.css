@@ -1,0 +1,272 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+  Cool paper, blue ink. Amber red is the one accent (about 5%): footnote numbers,
+  link underlines, active filters, focus rings.
+*/
+:root {
+  --bg: #F4F7FB;
+  --surface: #FFFFFF;
+  --sunken: #E9EFF7;
+  --fg: #0E1B2E;
+  --muted: #4A5A70;
+  --faint: #5F6F86;
+  --line: #D3DDEA;
+  --blue: #1D5BD6;
+  --blue-soft: #C9DAF8;
+  --accent: #B8361B;
+  --accent-fill: #F05A2A;
+  --grey: #8A97A8;
+
+  --cell: 8px;
+  --cell-gap: 2px;
+}
+
+/* Light by default, whatever the OS says. Dark only when the visitor picks it with the toggle. */
+:root[data-theme='dark'] {
+  --bg: #0B1526;
+  --surface: #101E33;
+  --sunken: #0E1A2D;
+  --fg: #E4ECF7;
+  --muted: #9CADC4;
+  --faint: #7F90A8;
+  --line: #22324A;
+  --blue: #6FA6FF;
+  --blue-soft: #1E3557;
+  --accent: #FF6B42;
+  --accent-fill: #FF6B42;
+  --grey: #6B7A90;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-blue: var(--blue);
+  --color-blue-soft: var(--blue-soft);
+  --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
+  --color-grey: var(--grey);
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 106.25%; /* 17px body */
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  font-variant-numeric: lining-nums;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--blue) 22%, transparent);
+}
+
+a {
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Theme switch: circular reveal from the toggle button */
+html.theme-switching::view-transition-old(root) {
+  animation: none;
+}
+html.theme-switching::view-transition-new(root) {
+  animation: theme-reveal 450ms ease-out;
+}
+@keyframes theme-reveal {
+  from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); }
+  to { clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0)); }
+}
+
+/* Skills matrix cell shade. The scroll-driven block below scales it by the grid's --fill;
+   --fill starts at 1, so cells show at full shade wherever that animation doesn't run. */
+.skills-grid .cell {
+  opacity: var(--shade, 1);
+}
+@property --fill {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+/*
+  Scroll-driven reveals: platform map lines, overview strip, skills matrix, unit charts.
+  One animation per chart, never per cell or bar: thousands of scroll timelines make scrolling stutter.
+  Opacity and transform run on the compositor; the strip's clip-path wipe repaints one small SVG.
+
+  Every reveal shares one start and end, measured from the element's top edge entering the screen:
+  start once the top has risen --reveal-start above the bottom of the screen, done at --reveal-end.
+  Change these two to retime every reveal on the site.
+*/
+:root {
+  --reveal-start: 10vh; /* top 10% up from the bottom */
+  --reveal-end: 50vh; /* top at the middle of the screen */
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Map: every line shares the map's timeline, so they draw together */
+    .draw-on-scroll {
+      view-timeline: --map;
+    }
+    .draw-on-scroll .flow {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+      animation: draw linear both;
+      animation-timeline: --map;
+      animation-range: cover var(--reveal-start) cover var(--reveal-end);
+    }
+    @keyframes draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Overview strip: the whole SVG wipes in from the left, in time order */
+    .wipe-on-scroll > svg {
+      animation: wipe linear both;
+      animation-timeline: view();
+      animation-range: cover var(--reveal-start) cover var(--reveal-end);
+    }
+    @keyframes wipe {
+      from { clip-path: inset(0 100% 0 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    /* Skills matrix: in each group's grid (four in all) the filled cells light up in random order.
+       Still one timeline per grid: the grid animates --fill from 0 to 1 and each cell only reads it,
+       appearing once --fill passes its own random --t. Labels, years and empty cells always show. */
+    .skills-grid {
+      animation: fill-cells linear both;
+      animation-timeline: view();
+      animation-range: cover var(--reveal-start) cover var(--reveal-end);
+    }
+    .skills-grid .cell {
+      opacity: calc(var(--shade, 1) * clamp(0, (var(--fill) - var(--t, 0)) * 7, 1));
+    }
+    @keyframes fill-cells {
+      from { --fill: 0; }
+      to { --fill: 1; }
+    }
+
+    /* Before/after bars (HTML, two per chart) */
+    .grow-on-scroll .bar {
+      transform-origin: left center;
+      animation: grow linear both;
+      animation-timeline: view();
+      animation-range: cover var(--reveal-start) cover var(--reveal-end);
+    }
+    @keyframes grow {
+      from { transform: scaleX(0); }
+    }
+
+    /* Unit charts: the chart fades in as one piece */
+    .fill-on-scroll > svg {
+      animation: fill linear both;
+      animation-timeline: view();
+      animation-range: cover var(--reveal-start) cover var(--reveal-end);
+    }
+    @keyframes fill {
+      from { opacity: 0.1; }
+    }
+  }
+}
+
+/* Condensed display cut of the same family: names, headings, big figures */
+.display {
+  font-stretch: 72%;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+/* Figures that should line up */
+.figure {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Body links: ink text, red underline */
+.ink-link {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+.ink-link:hover {
+  color: var(--accent);
+}
+
+/* Role glyphs: shape carries the role, colour only supports it */
+[data-role='built']    { --role: var(--blue);        --glyph-bg: var(--blue); }
+[data-role='co-owned'] { --role: var(--blue);        --glyph-bg: linear-gradient(90deg, var(--blue) 50%, transparent 50%); }
+[data-role='learned']  { --role: var(--accent-fill); --glyph-bg: transparent; }
+[data-role='retired']  { --role: var(--grey);        --glyph-bg: linear-gradient(135deg, var(--grey) 40%, transparent 40% 60%, var(--grey) 60%); }
+.glyph { display:inline-block; width:0.7rem; height:0.7rem; flex-shrink:0; border:2px solid var(--role); background:var(--glyph-bg); border-radius:1px; }
+
+/* Where a link landed (journey entries, section headings): two quick blinks once the scroll settles.
+   src/scripts/blink.ts adds .blink; each target sets its own static :target tint for reduced motion. */
+@supports (background: color-mix(in srgb, red, blue)) {
+  @media (prefers-reduced-motion: no-preference) {
+    .blink {
+      animation: blink 0.7s ease-in-out;
+    }
+  }
+}
+@keyframes blink {
+  0%, 50%, 100% { background: transparent; }
+  25%, 75% { background: color-mix(in srgb, var(--blue) 16%, transparent); }
+}
+
+/* Native <details> marker off; we draw our own */
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+details[open] .chevron { transform: rotate(90deg); }
+
+/* The site's one collapse/expand: every <details> grows open and shrinks closed instead of jumping.
+   Use a plain <details>/<summary> for anything that hides and shows. Browsers without interpolate-size just toggle. */
+@supports (interpolate-size: allow-keywords) {
+  @media (prefers-reduced-motion: no-preference) {
+    details {
+      interpolate-size: allow-keywords;
+    }
+    details::details-content {
+      block-size: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: block-size 0.3s ease, opacity 0.3s ease, content-visibility 0.3s allow-discrete;
+    }
+    details[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+}

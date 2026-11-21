@@ -1,0 +1,32 @@
+---
+import { roles, type Role } from '../data/timeline';
+
+interface Props {
+  role?: Role; // omit to show only the AI-accelerated badge
+  ai?: boolean; // also show the AI-accelerated badge
+}
+
+const { role, ai } = Astro.props;
+---
+
+{
+  role && (
+    <span data-role={role} title={roles[role].hint} class="inline-flex shrink-0 items-center gap-1.5 text-sm text-muted">
+      <span class="glyph" aria-hidden="true" />
+      {roles[role].label}
+    </span>
+  )
+}
+{
+  ai && (
+    <span
+      title="Built with heavy use of an AI coding assistant"
+      class="inline-flex shrink-0 items-center gap-1 rounded-[3px] border border-line px-1.5 text-xs leading-5 text-muted"
+    >
+      <svg class="h-3 w-3 text-accent" viewBox="0 0 12 12" aria-hidden="true">
+        <path d="M6 0 L7.3 4.7 L12 6 L7.3 7.3 L6 12 L4.7 7.3 L0 6 L4.7 4.7 Z" fill="currentColor" />
+      </svg>
+      AI-accelerated
+    </span>
+  )
+}

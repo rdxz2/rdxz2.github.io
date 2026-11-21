@@ -1,0 +1,508 @@
+---
+import Base from '../layouts/Base.astro';
+import Badge from '../components/Badge.astro';
+import MetricChip from '../components/MetricChip.astro';
+import MetricViz from '../components/MetricViz.astro';
+import OverviewStrip from '../components/OverviewStrip.astro';
+import PlatformMap from '../components/PlatformMap.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import SkillsMatrix from '../components/SkillsMatrix.astro';
+import metrics from '../data/metrics.json';
+import { entries, roles, type Entry, type Role } from '../data/timeline';
+
+const m = metrics.metrics as Record<
+  string,
+  { display: string; label: string; method: string; window: string; as_of: string; viz?: unknown }
+>;
+
+// The hero paragraphs. Each figure comes from metrics.json and carries a numbered note with its method.
+const intro: (string | { id: string })[] = [
+  'For ',
+  { id: 'two-person-team' },
+  ' of my time at JULO, the data engineering team has been just a two-person team, as it is today. Together we run the data platform behind an Indonesian lending fintech: from Postgres data streams to the warehouse, the dashboards, and the models that score every customer.',
+];
+const lede: (string | { id: string })[] = [
+  'Moving the data platform off AWS cut our legacy AWS spend by ',
+  { id: 'aws-bill-drop' },
+  '. ',
+  { id: 'underwriting-cutover' },
+  ' of real-time loan scoring now runs on the event-driven pipeline I rebuilt, ',
+  { id: 'deploy-coverage' },
+  ' of our service repos deploy through one audited path, ',
+  { id: 'metabase-managed-access' },
+  ' of Metabase access is managed through our self-service platform, and ',
+  { id: 'medallion-docs' },
+  ' of medallion warehouse columns are documented in code.',
+];
+const paragraphs = [intro, lede];
+const notes = paragraphs.flat().filter((p) => typeof p !== 'string').map((p) => p.id);
+const vizNotes = notes.filter((id) => m[id].viz).slice(0, 3);
+
+const years = [...new Set(entries.map((e) => e.year))].sort((a, b) => b - a);
+const roleCounts = Object.fromEntries(
+  (Object.keys(roles) as Role[]).map((r) => [r, entries.filter((e) => e.role === r).length]),
+) as Record<Role, number>;
+
+// Three weight levels: flagship (featured cards), standard (expandable rows), compact (one line, expands).
+const levelOf = (e: Entry) => {
+  if (e.flagship) return 'flagship';
+  if (e.role === 'learned' || e.role === 'retired') return 'compact';
+  if (!e.details && !e.lesson && !e.metrics) return 'compact';
+  return 'standard';
+};
+---
+
+<Base>
+  <!-- Hero: the claim, with every figure footnoted -->
+  <section class="hero pt-16 sm:pt-24">
+    <h1 class="display text-[clamp(3.5rem,12vw,7.5rem)]">Richard<br />Dharmawan</h1>
+    <p class="mt-5 text-lg text-muted">Senior data engineer at JULO, Jakarta</p>
+    <p class="mt-2 text-muted">Talk to me on <a href="https://www.linkedin.com/in/rdxz2" class="ink-link text-fg">LinkedIn</a>.</p>
+
+    <div class="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
+      <div class="hero-in-left">
+        <div class="space-y-5 text-[1.25rem] leading-[1.55] sm:text-[1.4rem]">
+          {
+            paragraphs.map((parts) => (
+              <p>
+                {parts.map((part) =>
+                  typeof part === 'string' ? (
+                    part
+                  ) : (
+                    <a href={`#note-${part.id}`} class="figure font-semibold whitespace-nowrap hover:text-accent">
+                      {/* The prose already says "cut ... by" / "reduced ... by", so drop the leading sign */}
+                      {m[part.id].display.replace(/^−|\+/g, '')}
+                      <sup class="ml-0.5 text-[0.6em] font-bold text-accent">{notes.indexOf(part.id) + 1}</sup>
+                    </a>
+                  ),
+                )}
+              </p>
+            ))
+          }
+          <p class="text-muted">Built on lean architecture, reliable and automated, accelerated with AI.</p>
+        </div>
+
+        <div class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3">
+          {
+            vizNotes.map((id) => (
+              <div>
+                <MetricViz id={id} size="sm" />
+                <p class="mt-2 text-sm text-muted">
+                  <span class="figure font-semibold text-fg">{m[id].display}</span> {m[id].label}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <aside aria-label="How these numbers were measured" class="hero-in-right lg:border-l lg:border-line lg:pl-6">
+        <ol class="space-y-4 text-sm leading-relaxed">
+          {
+            notes.map((id, i) => (
+              <li id={`note-${id}`} class="note grid scroll-mt-8 grid-cols-[1.25rem_1fr]">
+                <span class="figure font-bold text-accent">{i + 1}</span>
+                <div>
+                  <span class="figure font-semibold" style={`view-transition-name: m-${id}`}>
+                    {m[id].display}
+                  </span>{' '}
+                  {m[id].label}. <span class="text-muted">{m[id].method}</span>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <a href="/numbers/" class="ink-link mt-5 ml-5 inline-block text-sm">All {Object.keys(m).length} percentages and how they were measured</a>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Platform map -->
+  <section id="platform" class="platform-band mt-28 scroll-mt-8 py-16">
+    <SectionHeading id="platform">The platform</SectionHeading>
+    <p class="mt-3 mb-10 max-w-xl text-muted">
+      What we run, in the order data flows through it. The curves between lanes show where one system feeds
+      another.
+    </p>
+    <PlatformMap />
+  </section>
+
+  <!-- Journey -->
+  <section id="journey" class="mt-28 scroll-mt-8">
+    <SectionHeading id="journey">The journey</SectionHeading>
+    <p class="mt-3 max-w-2xl text-muted">
+      Everything I've done at JULO and before: what I built / co-own / learned the hard way, and
+      what I shipped and then retired. Open any entry for the details.
+    </p>
+    <div class="mt-8"><OverviewStrip /></div>
+
+    <div class="mt-7 flex flex-wrap gap-2" role="group" aria-label="Filter the journey">
+      <button type="button" data-filter="all" aria-pressed="true" class="filter-btn">
+        All <span class="figure">{entries.length}</span>
+      </button>
+      {
+        (Object.keys(roles) as Role[]).map((r) => (
+          <button type="button" data-filter={r} data-role={r} aria-pressed="false" title={roles[r].hint} class="filter-btn">
+            <span class="glyph" aria-hidden="true" />
+            {roles[r].label} <span class="figure">{roleCounts[r]}</span>
+          </button>
+        ))
+      }
+    </div>
+    <p id="skill-status" class="mt-3 text-sm text-muted" hidden>
+      Showing entries that mention <strong class="text-fg"></strong>.{' '}
+      <button type="button" id="skill-clear" class="ink-link">Show all</button>
+    </p>
+
+    <div class="mt-10">
+      {years.map((year) => (
+        <div class="year-group grid md:grid-cols-[7rem_1fr]" data-year={year}>
+          <h3 class="display figure top-0 z-10 bg-bg py-2 text-3xl text-faint md:sticky md:self-start md:py-3">{year}</h3>
+          <ol class="border-l-2 border-line pb-8">
+            {entries
+              .filter((e) => e.year === year)
+              .map((e) => {
+                const level = levelOf(e);
+                const dateOnly = e.date.replace(`${year} `, '');
+                const body = (
+                  <>
+                    {e.details && (
+                      <ul class="list-disc space-y-1.5 pl-4 leading-relaxed text-muted marker:text-faint">
+                        {e.details.map((d) => (
+                          <li>{d}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {e.lesson && (
+                      <p class="leading-relaxed text-muted">
+                        <strong class="font-semibold text-fg">Lesson. </strong>
+                        {e.lesson}
+                      </p>
+                    )}
+                  </>
+                );
+                return (
+                  <li
+                    id={`entry-${e.id}`}
+                    class="entry relative scroll-mt-24 pl-6"
+                    data-role={e.role}
+                    data-skills={(e.skills ?? []).join('|')}
+                  >
+                    <span
+                      class={
+                        level === 'flagship'
+                          ? 'glyph absolute top-[1.25rem] -left-[9px] z-20 h-4 w-4'
+                          : 'glyph absolute top-[1.25rem] -left-[7px] z-20'
+                      }
+                      aria-hidden="true"
+                    />
+
+                    {level === 'flagship' && (
+                      <div class="my-3 rounded-[3px] border border-line border-l-[3px] border-l-blue bg-surface p-5">
+                        <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                          <span class="figure text-sm text-faint">{dateOnly}</span>
+                          <Badge role={e.role} ai={e.aiAccelerated} />
+                        </div>
+                        <h4 class="display mt-2 text-[1.6rem] leading-[1.05]">{e.title}</h4>
+                        <p class="mt-2 leading-relaxed text-muted">{e.summary}</p>
+                        {e.metrics && (
+                          <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                            {e.metrics.map((id) => (
+                              <div class="space-y-2">
+                                <MetricChip id={id} />
+                                <MetricViz id={id} size="sm" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {e.link && (
+                          <div class="mt-4 flex flex-wrap items-center gap-5">
+                            <a href={e.link.href} class="ink-link">
+                              {e.link.label}
+                            </a>
+                          </div>
+                        )}
+                        {(e.details || e.lesson) && (
+                          <details class="mt-4">
+                            <summary class="cursor-pointer text-sm text-accent hover:text-fg">See more</summary>
+                            <div class="mt-3 max-w-2xl space-y-3 text-[0.95rem]">{body}</div>
+                          </details>
+                        )}
+                      </div>
+                    )}
+
+                    {level === 'standard' && (
+                      <details class="group py-3">
+                        <summary class="cursor-pointer">
+                          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                            <span class="figure text-sm text-faint">{dateOnly}</span>
+                            <Badge role={e.role} ai={e.aiAccelerated} />
+                          </div>
+                          <div class="mt-1 flex items-start gap-2">
+                            <span class="chevron mt-[0.1rem] w-3 shrink-0 text-faint transition-transform" aria-hidden="true">›</span>
+                            <div class="max-w-2xl">
+                              <div class="text-[1.05rem] font-semibold leading-snug group-hover:text-accent">{e.title}</div>
+                              <p class="mt-1 leading-relaxed text-muted">{e.summary}</p>
+                            </div>
+                          </div>
+                          {e.metrics && (
+                            <div class="mt-2 ml-5 flex flex-wrap gap-x-5 gap-y-1">
+                              {e.metrics.map((id) => (
+                                <MetricChip id={id} />
+                              ))}
+                            </div>
+                          )}
+                        </summary>
+                        <div class="mt-3 ml-5 max-w-2xl space-y-3 text-[0.95rem]">
+                          {body}
+                          {e.link && (
+                            <div class="flex flex-wrap gap-5">
+                              <a href={e.link.href} class="ink-link">
+                                {e.link.label}
+                              </a>
+                            </div>
+                          )}
+                          {!e.details && !e.lesson && !e.link && <p class="text-faint">That's the whole story.</p>}
+                        </div>
+                      </details>
+                    )}
+
+                    {level === 'compact' && (
+                      <details class="group py-1.5">
+                        <summary class="cursor-pointer">
+                          <div class="flex flex-wrap items-baseline gap-x-3">
+                            <span class="figure text-sm text-faint">{dateOnly}</span>
+                            <span class="text-[0.95rem] font-medium text-muted group-hover:text-fg">{e.title}</span>
+                            <Badge role={e.role} ai={e.aiAccelerated} />
+                          </div>
+                        </summary>
+                        <div class="ml-0 mt-2 max-w-2xl space-y-3 text-[0.95rem]">
+                          <p class="leading-relaxed text-muted">{e.summary}</p>
+                          {body}
+                          {e.link && (
+                            <div class="flex flex-wrap gap-5">
+                              <a href={e.link.href} class="ink-link">
+                                {e.link.label}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </details>
+                    )}
+                  </li>
+                );
+              })}
+          </ol>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Commit share -->
+  <section id="commits" class="mt-28 scroll-mt-8">
+    <SectionHeading id="commits">Who wrote the code</SectionHeading>
+    <p class="mt-3 mb-8 max-w-2xl text-muted">
+      Every non-merge commit to the data team's repositories since I joined in October 2021, by author.
+    </p>
+    <div class="grid max-w-4xl gap-6 sm:grid-cols-[11rem_1fr] sm:gap-8">
+      <p>
+        <span class="display figure block text-[2.6rem] leading-none" style="view-transition-name: m-commit-share">{m['commit-share'].display}</span>
+        <span class="mt-2 block text-sm text-muted">{m['commit-share'].label}</span>
+      </p>
+      <div>
+        <MetricViz id="commit-share" />
+        <a href="/numbers/#commit-share" class="ink-link mt-4 inline-block text-sm">How this was counted</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Side projects -->
+  <section id="side-projects" class="mt-28 scroll-mt-8">
+    <SectionHeading id="side-projects">On the side</SectionHeading>
+    <dl class="mt-8 max-w-3xl space-y-5">
+      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
+        <dt><Badge ai /> <a href="https://github.com/rdxz2/rdxz2.github.io" class="ink-link font-semibold">This site</a></dt>
+        <dd class="text-muted">A static Astro and Tailwind site with no client framework. Every number on it is read from one data file that records how and when it was measured.</dd>
+      </div>
+      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
+        <dt><Badge ai /> <span class="font-semibold">To-do app + MCP server</span></dt>
+        <dd class="text-muted">A productivity tool built for myself with Claude (Django, React), with its own MCP server so Claude can plan and track my tasks with me.</dd>
+      </div>
+      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
+        <dt><a href="https://github.com/rdxz2/demo" class="ink-link font-semibold">CDC from scratch</a></dt>
+        <dd class="text-muted">
+          A hand-written Postgres pgoutput decoder streaming into BigQuery, with Airflow and Metabase around it.
+          <details class="mt-2">
+            <summary class="cursor-pointer text-sm text-accent hover:text-fg">See more</summary>
+            <ul class="mt-2 list-disc space-y-1.5 pl-4 leading-relaxed marker:text-faint">
+              <li>Decodes Relation, Begin, Insert, Update, Delete and Truncate messages byte by byte straight from the Postgres replication protocol, with a bounded queue for backpressure.</li>
+              <li>Streams into BigQuery through the Storage Write API with per-table generated protobuf schemas, cutoff-timestamp merge tracking, and a synthetic loan-traffic producer.</li>
+              <li>Deployed with GitHub Actions and Ansible through an IAP tunnel, alongside self-hosted Airflow and Metabase.</li>
+            </ul>
+          </details>
+        </dd>
+      </div>
+      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
+        <dt><a href="https://github.com/rdxz2/utill" class="ink-link font-semibold">utill</a></dt>
+        <dd class="text-muted">My Python utility library for everyday data-engineering chores.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <!-- Skills -->
+  <section id="skills" class="mt-28 scroll-mt-8">
+    <SectionHeading id="skills">What I work with</SectionHeading>
+    <p class="mt-3 mb-8 max-w-2xl text-muted">
+      Each cell is a year in which a journey entry used that tool. Pick a tool to see those entries.
+    </p>
+    <SkillsMatrix />
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="mt-28 scroll-mt-8">
+    <SectionHeading id="contact">Get in touch</SectionHeading>
+    <p class="mt-4 max-w-xl text-lg text-muted">
+      Happy to talk data platforms, in English or Bahasa Indonesia. The fastest way to reach me is
+      <a href="https://www.linkedin.com/in/rdxz2" class="ink-link text-fg">LinkedIn</a>.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .filter-btn:hover {
+    border-color: var(--faint);
+    color: var(--fg);
+  }
+  .filter-btn .figure {
+    color: var(--faint);
+  }
+  .filter-btn[aria-pressed='true'] {
+    background: var(--accent-fill);
+    border-color: var(--accent-fill);
+    color: #0E1B2E;
+  }
+  .filter-btn[aria-pressed='true'] .figure {
+    color: inherit;
+    opacity: 0.7;
+  }
+  .note:target {
+    background: var(--surface);
+    outline: 4px solid var(--surface);
+  }
+  /* Overview strip bars and platform map stops link here; mark the entry they point at so it's clear which one.
+     Static tint under reduced motion, otherwise two quick blinks (.blink in global.css, added by src/scripts/blink.ts). */
+  .entry:target,
+  .entry.blink {
+    border-radius: 0 3px 3px 0;
+  }
+  .entry:target {
+    background: color-mix(in srgb, var(--blue) 10%, transparent);
+  }
+  @supports (background: color-mix(in srgb, red, blue)) {
+    @media (prefers-reduced-motion: no-preference) {
+      .entry:target {
+        background: transparent;
+      }
+    }
+  }
+  /* Hero entrance on a fresh load: the story slides in from the left, the footnotes from the right. Name, title and LinkedIn line stay put.
+     Skipped when arriving by view transition (html.vt-arrival, set in Base), where the numbers already morph. */
+  .hero {
+    overflow-x: clip; /* the right-hand slide would otherwise add a horizontal scrollbar on phones */
+    overflow-clip-margin: 0.5rem;
+  }
+  @supports (translate: 0) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-in-left {
+        animation: hero-in-left 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.5s both;
+      }
+      .hero-in-right {
+        animation: hero-in-right 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) 0.62s both;
+      }
+      :global(html.vt-arrival) .hero-in-left,
+      :global(html.vt-arrival) .hero-in-right {
+        animation: none;
+      }
+    }
+  }
+  @keyframes hero-in-left {
+    from { opacity: 0; translate: -6rem 0; }
+  }
+  @keyframes hero-in-right {
+    from { opacity: 0; translate: 6rem 0; }
+  }
+  .platform-band {
+    background: var(--surface);
+    box-shadow: 0 0 0 100vmax var(--surface);
+    clip-path: inset(0 -100vmax);
+  }
+  /* .glyph is unlayered CSS, so it beats Tailwind's h-4/w-4 utilities; size flagship markers here. */
+  .glyph.h-4 {
+    width: 1rem;
+    height: 1rem;
+  }
+</style>
+
+<script>
+  import { blinkWhenScrolled } from '../scripts/blink';
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  let role = 'all';
+  let skill: string | null = null;
+  const roleBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const skillBtns = document.querySelectorAll<HTMLButtonElement>('.skill-btn');
+  const status = document.getElementById('skill-status')!;
+
+  const apply = () => {
+    document.querySelectorAll<HTMLElement>('.entry').forEach((el) => {
+      const roleOk = role === 'all' || el.dataset.role === role;
+      const skillOk = !skill || (el.dataset.skills ?? '').split('|').includes(skill);
+      el.hidden = !(roleOk && skillOk);
+    });
+    document.querySelectorAll<HTMLElement>('.year-group').forEach((g) => {
+      g.hidden = !g.querySelector('.entry:not([hidden])');
+    });
+    roleBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === role)));
+    skillBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skill === skill)));
+    status.hidden = !skill;
+    status.querySelector('strong')!.textContent = skill ?? '';
+  };
+  const update = (fn: () => void) => {
+    const run = () => { fn(); apply(); };
+    if (!('startViewTransition' in document) || reduce.matches) { run(); return; }
+    // Name only the entries on screen, and only for this transition: every named element is captured and animated
+    const named = [...document.querySelectorAll<HTMLElement>('.entry:not([hidden])')].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < innerHeight;
+    });
+    named.forEach((el) => (el.style.viewTransitionName = el.id));
+    (document as any).startViewTransition(run).finished.finally(() => named.forEach((el) => (el.style.viewTransitionName = '')));
+  };
+  roleBtns.forEach((b) => b.addEventListener('click', () => update(() => { role = b.dataset.filter!; })));
+  skillBtns.forEach((b) => b.addEventListener('click', () => {
+    update(() => { skill = skill === b.dataset.skill ? null : b.dataset.skill!; });
+    document.getElementById('journey')!.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth' });
+  }));
+  document.getElementById('skill-clear')!.addEventListener('click', () => update(() => { skill = null; }));
+  // A bar in the overview strip or stop on the platform map may point at an entry that a filter hides
+  document.querySelectorAll<HTMLElement | SVGAElement>('a[data-entry]').forEach((a) => a.addEventListener('click', () => {
+    const target = document.getElementById(`entry-${a.dataset.entry}`);
+    if (!target) return;
+    if (target.hidden) {
+      role = 'all';
+      skill = null;
+      apply();
+    }
+    blinkWhenScrolled(target);
+  }));
+</script>

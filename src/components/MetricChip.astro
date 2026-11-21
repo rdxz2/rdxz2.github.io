@@ -1,0 +1,15 @@
+---
+import metrics from '../data/metrics.json';
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const m = (metrics.metrics as Record<string, { display: string; label: string; method: string; window: string; as_of: string }>)[id];
+if (!m) throw new Error(`Unknown metric id: ${id}`);
+---
+
+<a href={`/numbers/#${id}`} title={`${m.method} (${m.window}, as of ${m.as_of})`} class="group inline text-sm text-muted">
+  <span class="figure font-semibold text-fg underline decoration-accent decoration-1 underline-offset-[0.2em] group-hover:text-accent">{m.display}</span>{' '}{m.label}
+</a>

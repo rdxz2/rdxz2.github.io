@@ -1,0 +1,100 @@
+---
+import '../styles/global.css';
+import metrics from '../data/metrics.json';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Richard Dharmawan, Senior Data Engineer',
+  description = 'Senior Data Engineer in Jakarta. I run the data platform behind an Indonesian lending fintech: ingestion, warehouse, BI and real-time ML scoring on Google Cloud.',
+} = Astro.props;
+
+const asOf = new Date(metrics.as_of).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      // Arrived from another page of the site by view transition: skip first-load entrance animations
+      addEventListener('pagereveal', (e) => e.viewTransition && document.documentElement.classList.add('vt-arrival'));
+      try {
+        if (localStorage.getItem('theme') === 'dark') document.documentElement.dataset.theme = 'dark';
+      } catch {}
+    </script>
+  </head>
+  <body class="font-sans text-fg">
+    <header class="mx-auto flex max-w-5xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-4 pt-6 sm:px-6">
+      <a href="/" class="display text-xl hover:text-accent">Richard Dharmawan</a>
+      <nav class="flex items-baseline gap-5 text-[0.95rem] text-muted">
+        <a href="/#platform" class="hover:text-fg">Platform</a>
+        <a href="/#journey" class="hover:text-fg">Journey</a>
+        <a href="/numbers/" class="hover:text-fg">Numbers</a>
+        <button
+          id="theme-toggle"
+          type="button"
+          class="-m-1 self-center rounded-[3px] p-1 text-faint hover:text-fg"
+          aria-label="Dark theme"
+          aria-pressed="false"
+          title="Dark theme"
+        >
+          <!-- Moon in light mode (switch to dark), sun in dark mode (switch to light) -->
+          <svg class="block h-[1.15rem] w-[1.15rem] dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+          <svg class="hidden h-[1.15rem] w-[1.15rem] dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-4 sm:px-6">
+      <slot />
+    </main>
+
+    <footer class="mx-auto mt-28 flex max-w-5xl flex-wrap items-baseline justify-between gap-3 px-4 pt-6 pb-10 text-sm text-faint sm:px-6">
+      <span>Numbers measured as of <a href="/numbers/" class="ink-link text-muted">{asOf}</a></span>
+      <span class="flex gap-5">
+        <a href="https://www.linkedin.com/in/rdxz2" class="hover:text-fg">LinkedIn</a>
+        <a href="https://github.com/rdxz2" class="hover:text-fg">GitHub</a>
+      </span>
+    </footer>
+
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        const btn = document.getElementById('theme-toggle');
+        const isDark = () => root.dataset.theme === 'dark';
+        btn.setAttribute('aria-pressed', String(isDark()));
+        btn.addEventListener('click', () => {
+          const apply = () => {
+            root.dataset.theme = isDark() ? 'light' : 'dark';
+            try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+            btn.setAttribute('aria-pressed', String(isDark()));
+          };
+          const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (!document.startViewTransition || reduce) { apply(); return; }
+          const r = btn.getBoundingClientRect();
+          root.style.setProperty('--vt-x', `${r.left + r.width / 2}px`);
+          root.style.setProperty('--vt-y', `${r.top + r.height / 2}px`);
+          root.classList.add('theme-switching');
+          document.startViewTransition(apply).finished.finally(() => root.classList.remove('theme-switching'));
+        });
+      })();
+    </script>
+  </body>
+</html>

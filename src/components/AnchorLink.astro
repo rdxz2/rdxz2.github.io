@@ -1,0 +1,65 @@
+---
+// Text that links to its own anchor: hover shows a "#", a click puts the link in the URL bar without scrolling.
+interface Props {
+  id: string; // the id of the element this text names
+}
+const { id } = Astro.props;
+---
+
+<a href={`#${id}`} class="anchor-link"><span class="anchor-text"><slot /></span><span class="hash" aria-hidden="true">#</span></a>
+
+<style>
+  .anchor-text {
+    text-decoration: underline 2px transparent;
+    text-underline-offset: 0.12em;
+  }
+  .hash {
+    margin-left: 0.25em;
+    color: var(--accent);
+    font-weight: 500;
+    opacity: 0;
+  }
+  .anchor-link:hover .anchor-text,
+  .anchor-link:focus-visible .anchor-text {
+    text-decoration-color: var(--accent);
+  }
+  .anchor-link:hover .hash,
+  .anchor-link:focus-visible .hash {
+    opacity: 1;
+  }
+  /* No hover on touch screens: keep the "#" in view, quietly */
+  @media (hover: none) {
+    .hash {
+      opacity: 1;
+      color: var(--faint);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .anchor-text {
+      transition: text-decoration-color 0.2s ease;
+    }
+    @supports (translate: 0) {
+      .hash {
+        translate: -0.2em 0;
+        transition: opacity 0.2s ease, translate 0.2s ease;
+      }
+      .anchor-link:hover .hash,
+      .anchor-link:focus-visible .hash {
+        translate: 0 0;
+      }
+    }
+  }
+</style>
+
+<script>
+  // Clicking only puts the link in the URL bar; the page stays where it is.
+  // Modifier clicks (open in new tab or window) keep the browser's default.
+  document.querySelectorAll<HTMLAnchorElement>('.anchor-link').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      history.replaceState(null, '', a.hash);
+    }),
+  );
+</script>

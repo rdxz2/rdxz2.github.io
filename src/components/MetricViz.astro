@@ -1,0 +1,134 @@
+---
+import metrics from '../data/metrics.json';
+
+interface Props {
+  id: string;
+  size?: 'sm' | 'md';
+}
+
+const { id, size = 'md' } = Astro.props;
+const md = size === 'md';
+const viz = (metrics.metrics as any)[id]?.viz;
+
+// Waffle and people share one grid: cells filled blue up to `on`.
+const isGrid = viz?.type === 'waffle' || viz?.type === 'people';
+const cell = md ? 8 : 5;
+const gap = md ? 2 : 1;
+const step = cell + gap;
+const cols = isGrid ? Math.min(viz.total, md ? 50 : 30) : 0;
+const rows = isGrid ? Math.ceil(viz.total / cols) : 0;
+const gridW = cols * step - gap;
+const gridH = rows * step - gap;
+const gridCells = isGrid
+  ? Array.from({ length: viz.total as number }, (_, i) => ({
+      x: (i % cols) * step,
+      y: Math.floor(i / cols) * step,
+      fill: viz.on === undefined || i < viz.on ? 'var(--blue)' : 'var(--blue-soft)',
+    }))
+  : [];
+
+// Nested squares: outer is the whole, inner is its area share.
+const isNested = viz?.type === 'nested';
+const S = md ? 120 : 48;
+const innerSide = isNested ? S * Math.sqrt(viz.inner / viz.outer) : 0;
+
+// Before/after bars.
+const isBars = viz?.type === 'bars';
+const max = isBars ? Math.max(...viz.values) : 0;
+
+// One stacked bar: segments shade from strong blue down to grey, in order.
+const isStack = viz?.type === 'stack';
+const shades = [
+  'var(--blue)',
+  'color-mix(in srgb, var(--blue) 55%, var(--blue-soft))',
+  'var(--blue-soft)',
+  'color-mix(in srgb, var(--faint) 35%, transparent)',
+];
+---
+
+{
+  isGrid && (
+    <figure class="fill-on-scroll" role="img" aria-label={viz.caption}>
+      <svg width={gridW} height={gridH} viewBox={`0 0 ${gridW} ${gridH}`} class="block max-w-full h-auto">
+        {gridCells.map((c) =>
+          viz.type === 'people' ? (
+            <circle class="cell" cx={c.x + cell / 2} cy={c.y + cell / 2} r={cell / 2} style={`fill: ${c.fill}`} />
+          ) : (
+            <rect class="cell" x={c.x} y={c.y} width={cell} height={cell} rx="1" style={`fill: ${c.fill}`} />
+          ),
+        )}
+      </svg>
+      {md && <figcaption class="mt-2 text-sm text-faint">{viz.caption}</figcaption>}
+    </figure>
+  )
+}
+
+{
+  isNested && (
+    <figure role="img" aria-label={viz.caption}>
+      <div class="flex items-end gap-4">
+        <svg width={S} height={S} viewBox={`0 0 ${S} ${S}`} class="block shrink-0" aria-hidden="true">
+          <rect width={S} height={S} rx="1" style="fill: var(--blue-soft)" />
+          <rect x="0" y={S - innerSide} width={innerSide} height={innerSide} rx="1" style="fill: var(--blue)" />
+        </svg>
+        {md && (
+          <ul class="grid gap-2 text-sm text-muted">
+            <li class="flex items-center gap-2">
+              <span class="block h-2 w-2 rounded-[1px]" style="background: var(--blue-soft)" aria-hidden="true"></span>
+              {viz.outerLabel}
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="block h-2 w-2 rounded-[1px]" style="background: var(--blue)" aria-hidden="true"></span>
+              {viz.innerLabel}
+            </li>
+          </ul>
+        )}
+      </div>
+      {md && <figcaption class="mt-2 text-sm text-faint">{viz.caption}</figcaption>}
+    </figure>
+  )
+}
+
+{
+  isBars && (
+    <figure role="img" aria-label={viz.caption}>
+      <div class="grow-on-scroll grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5">
+        {viz.values.map((value: number, i: number) => (
+          <>
+            <span class:list={['figure text-muted', md ? 'text-sm' : 'text-xs']}>{viz.labels[i]}</span>
+            <div
+              class:list={['bar rounded-[1px]', md ? 'h-3' : 'h-2']}
+              style={`width:${Math.max((value / max) * 100, 0.8)}%;background:var(${i === 0 ? '--blue-soft' : '--blue'})`}
+            ></div>
+          </>
+        ))}
+      </div>
+      {md && <figcaption class="mt-2 text-sm text-faint">{viz.caption}</figcaption>}
+    </figure>
+  )
+}
+
+{
+  isStack && (
+    <figure role="img" aria-label={viz.caption}>
+      <div class="grow-on-scroll">
+        <div class:list={['bar flex gap-px overflow-hidden rounded-[1px]', md ? 'h-4' : 'h-2']}>
+          {viz.segments.map((s: { value: number }, i: number) => (
+            <div style={`flex-grow:${s.value};background:${shades[i]}`}></div>
+          ))}
+        </div>
+      </div>
+      {md && (
+        <ul class="mt-3 grid gap-x-6 gap-y-1.5 text-sm text-muted sm:grid-cols-2">
+          {viz.segments.map((s: { label: string; value: number }, i: number) => (
+            <li class="flex items-center gap-2">
+              <span class="block h-2 w-2 shrink-0 rounded-[1px]" style={`background:${shades[i]}`} aria-hidden="true"></span>
+              <span class="figure font-semibold text-fg">{s.value}%</span> {s.label}
+            </li>
+          ))}
+        </ul>
+      )}
+      {md && <figcaption class="mt-2 text-sm text-faint">{viz.caption}</figcaption>}
+    </figure>
+  )
+}

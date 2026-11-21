@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+import MetricViz from '../components/MetricViz.astro';
+import AnchorLink from '../components/AnchorLink.astro';
+import metrics from '../data/metrics.json';
+
+const m = metrics.metrics as Record<
+  string,
+  { display: string; label: string; method: string; window: string; as_of: string; viz?: unknown }
+>;
+---
+
+<Base title="Numbers – Richard Dharmawan" description="Every number on this site, how it was measured, and when.">
+  <section class="pt-14">
+    <h1 class="display text-[clamp(3rem,9vw,5.5rem)]">The numbers</h1>
+    <p class="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+      Every percentage on this site, how it was measured and when. They come from production systems (warehouse
+      metadata, billing reports, dbt manifests, git history), measured read-only and expressed as relative percentages or indexed
+      ratios so internal totals and names stay private. Last refreshed on <span class="figure text-fg">{metrics.as_of}</span>.
+    </p>
+
+    <dl class="mt-14 max-w-4xl space-y-10">
+      {
+        Object.entries(m).map(([id, x]) => (
+          <div id={id} class="metric grid scroll-mt-8 gap-2 sm:grid-cols-[11rem_1fr] sm:gap-8">
+            <dt class="display figure text-[2.6rem] leading-none" style={`view-transition-name: m-${id}`}>{x.display}</dt>
+            <dd class="max-w-2xl">
+              <div class="text-lg font-semibold">
+                <AnchorLink id={id}>{x.label}</AnchorLink>
+              </div>
+              <p class="mt-1 leading-relaxed text-muted">{x.method}</p>
+              <p class="mt-1 text-sm text-faint">
+                Window: {x.window}. Measured on <span class="figure">{x.as_of}</span>.
+              </p>
+              {x.viz && (
+                <div class="mt-4">
+                  <MetricViz id={id} />
+                </div>
+              )}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+</Base>
+
+<style>
+  .metric:target {
+    background: var(--surface);
+    outline: 0.75rem solid var(--surface);
+  }
+  .metric:target dt {
+    color: var(--accent);
+  }
+</style>

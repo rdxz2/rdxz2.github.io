@@ -1,0 +1,51 @@
+---
+// A section title that links to its own section (see AnchorLink), and blinks when a link lands on the section.
+import AnchorLink from './AnchorLink.astro';
+
+interface Props {
+  id: string; // the id of the <section> this heading opens
+}
+const { id } = Astro.props;
+---
+
+<h2 class="anchor-heading display text-4xl">
+  <AnchorLink id={id}><slot /></AnchorLink>
+</h2>
+
+<style>
+  .anchor-heading {
+    width: fit-content;
+    /* Room for the landing tint without moving the text */
+    padding: 0.15em 0.3em;
+    margin: -0.15em -0.3em;
+    border-radius: 3px;
+  }
+
+  /* Landed here by link: static tint under reduced motion, otherwise two blinks (src/scripts/blink.ts) */
+  :global(section:target) > .anchor-heading {
+    background: color-mix(in srgb, var(--blue) 10%, transparent);
+  }
+  @supports (background: color-mix(in srgb, red, blue)) {
+    @media (prefers-reduced-motion: no-preference) {
+      :global(section:target) > .anchor-heading {
+        background: transparent;
+      }
+    }
+  }
+</style>
+
+<script>
+  import { blinkWhenScrolled } from '../scripts/blink';
+
+  const headingFor = (hash: string) => (hash ? document.getElementById(hash.slice(1))?.querySelector('.anchor-heading') : null);
+
+  // Links on this page to an anchored section (the header nav) mark the heading once they scroll there
+  document.querySelectorAll<HTMLAnchorElement>('a[href*="#"]:not(.anchor-link)').forEach((a) => {
+    if (a.pathname !== location.pathname) return;
+    const heading = headingFor(a.hash);
+    if (heading) a.addEventListener('click', () => blinkWhenScrolled(heading));
+  });
+  // Arrived with a section in the URL (a shared link, or the header nav from another page)
+  const landed = headingFor(location.hash);
+  if (landed) blinkWhenScrolled(landed);
+</script>

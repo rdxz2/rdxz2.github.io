@@ -1,0 +1,292 @@
+---
+// Static map of the platform: three lanes, each a flow from left to right.
+// Stops with a journey entry link to it. Links between lanes show where one system feeds another.
+import type { Role } from '../data/timeline';
+
+interface Stop {
+  id: string;
+  label: string;
+  sub: string;
+  role?: Role;
+  entry?: string; // id of the journey timeline entry
+}
+
+const lanes: { name: string; y: number; stops: Stop[] }[] = [
+  {
+    name: 'Data',
+    y: 70,
+    stops: [
+      { id: 'postgres', label: 'Postgres', sub: 'app databases' },
+      { id: 'cdc', label: 'CDC', sub: 'change log, nightly merge', role: 'co-owned', entry: 'cdc-alibaba-to-gcp' },
+      { id: 'medallion', label: 'Medallion', sub: 'bronze, silver, gold', role: 'co-owned', entry: 'medallion-warehouse' },
+      { id: 'semantic', label: 'Semantic layer', sub: 'metrics as code', role: 'built', entry: 'semantic-layer' },
+      { id: 'metabase', label: 'Metabase', sub: 'self-service BI', entry: 'semantic-layer' },
+    ],
+  },
+  {
+    name: 'Scoring',
+    y: 225,
+    stops: [
+      { id: 'application', label: 'Loan application', sub: 'events from the app' },
+      { id: 'orchestrator', label: 'Orchestrator', sub: 'event-driven, A/B', role: 'built', entry: 'realtime-underwriting' },
+      { id: 'features', label: 'Feature service', sub: 'point-in-time features', role: 'built', entry: 'realtime-feature-service' },
+      { id: 'models', label: 'Model containers', sub: 'one per version', role: 'built', entry: 'model-per-container' },
+      { id: 'decision', label: 'Decision', sub: 'rules, moving to backend' },
+    ],
+  },
+  {
+    name: 'Platform',
+    y: 380,
+    stops: [
+      { id: 'datamation', label: 'Data-ops app', sub: 'self-service ops', role: 'built', entry: 'datamation-self-service' },
+      { id: 'deploys', label: 'Deploys', sub: 'one path, audited', role: 'built', entry: 'deploy-platform' },
+      { id: 'airflow', label: 'Airflow', sub: 'batch + ML jobs' },
+      { id: 'ansible', label: 'Ansible', sub: 'shared roles, one repo', role: 'built', entry: 'deploy-platform' },
+      { id: 'gcp', label: 'Google Cloud', sub: '100% since AWS exit', role: 'co-owned', entry: 'aws-to-gcp' },
+    ],
+  },
+];
+
+// Stop positions on the desktop SVG: stop i of a lane sits at x = 170 + i * 190.
+const placed = lanes.flatMap((lane) => lane.stops.map((s, i) => ({ ...s, x: 170 + i * 190, y: lane.y })));
+const at = (id: string) => placed.find((p) => p.id === id)!;
+
+const links: [from: string, to: string, label?: string][] = [
+  ['airflow', 'cdc'],
+  ['airflow', 'medallion'],
+  ['medallion', 'features'],
+  ['postgres', 'features'],
+  ['deploys', 'models'],
+  ['deploys', 'medallion'],
+  ['datamation', 'deploys'],
+  ['deploys', 'ansible'],
+  ['datamation', 'metabase'],
+  ['datamation', 'medallion'],
+  ['datamation', 'semantic'],
+  ['medallion', 'postgres', 'delivery'],
+];
+
+const paths = links.map(([from, to, label]) => {
+  const a = at(from);
+  const b = at(to);
+  // Same lane: an arc above the lane. Across lanes: an S-curve.
+  if (a.y === b.y) {
+    return {
+      from,
+      to,
+      label,
+      d: `M${a.x} ${a.y - 10} C${a.x} ${a.y - 62}, ${b.x} ${a.y - 62}, ${b.x} ${b.y - 10}`,
+      lx: (a.x + b.x) / 2,
+      ly: a.y - 50,
+    };
+  }
+  const ym = (a.y + b.y) / 2;
+  return { from, to, label, d: `M${a.x} ${a.y} C${a.x} ${ym}, ${b.x} ${ym}, ${b.x} ${b.y}` };
+});
+
+const roleMark: Partial<Record<Role, string>> = {
+  built: 'fill:var(--blue)',
+  'co-owned': 'fill:url(#role-half);stroke:var(--blue);stroke-width:1.5',
+};
+---
+
+<div class="map draw-on-scroll">
+  <svg class="hidden md:block w-full h-auto" viewBox="0 0 1000 450">
+    <defs>
+      <!-- Half-filled square for co-owned; the legend below reuses it (both only show at md+) -->
+      <linearGradient id="role-half">
+        <stop offset="50%" style="stop-color:var(--blue)" />
+        <stop offset="50%" style="stop-color:transparent" />
+      </linearGradient>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" style="fill:var(--blue)" />
+      </marker>
+    </defs>
+
+    {lanes.map((lane) => (
+      <text x="0" y={lane.y + 6} class="display" style="fill:var(--muted);font-size:20px">{lane.name}</text>
+    ))}
+    {lanes.map((lane) => (
+      <path
+        class="flow lane"
+        pathLength="1"
+        d={`M150 ${lane.y} H985`}
+        style="stroke:var(--blue);stroke-width:2;fill:none"
+        marker-end="url(#arrow)"
+      />
+    ))}
+
+    {paths.map((p) => (
+      <>
+        <path
+          class="flow link"
+          pathLength="1"
+          d={p.d}
+          data-from={p.from}
+          data-to={p.to}
+          style="stroke:var(--blue);stroke-width:1.25;fill:none;opacity:.22"
+        />
+        {p.label && (
+          <text x={p.lx} y={p.ly} text-anchor="middle" style="fill:var(--faint);font-size:12px">{p.label}</text>
+        )}
+      </>
+    ))}
+
+    {placed.map((s) => {
+      const Tag = s.entry ? 'a' : 'g';
+      return (
+        <Tag href={s.entry ? `#entry-${s.entry}` : undefined} data-entry={s.entry}>
+          <g class="stop" data-id={s.id}>
+            {/* Invisible box over the whole cell, so hovering anywhere in it counts, not only the painted dot and text */}
+            <rect x={s.x - 90} y={s.y - 30} width="180" height="86" style="fill:none" pointer-events="all" />
+            <circle
+              cx={s.x}
+              cy={s.y}
+              r="7"
+              style={s.entry ? 'fill:var(--blue)' : 'fill:var(--bg);stroke:var(--blue);stroke-width:2'}
+            />
+            {s.role && roleMark[s.role] && (
+              <rect x={s.x + 11} y={s.y - 21} width="9" height="9" rx="1" style={roleMark[s.role]} />
+            )}
+            <text
+              x={s.x}
+              y={s.y + 28}
+              text-anchor="middle"
+              class={s.entry ? 'stop-label-link' : undefined}
+              style="fill:var(--fg);font-size:15px;font-weight:600"
+            >
+              {s.label}
+            </text>
+            <text x={s.x} y={s.y + 46} text-anchor="middle" style="fill:var(--faint);font-size:12.5px">{s.sub}</text>
+          </g>
+        </Tag>
+      );
+    })}
+  </svg>
+</div>
+
+<!-- Legend: each mark drawn the same way as on the map -->
+<p class="mt-4 hidden md:block text-sm text-faint italic">
+  *Filled stops (<svg class="key" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" style="fill:var(--blue)" /></svg>)
+  jump to the journey entry. The lines (<svg class="key key-wide" viewBox="0 0 24 12" aria-hidden="true"><path d="M1 11 C9 11, 15 1, 23 1" style="stroke:var(--blue);stroke-width:1.5;fill:none" /></svg>)
+  between lanes show where one system feeds another; hover or focus a stop to trace them. The small square shows my role:
+  {
+    Object.entries(roleMark).map(([role, style], i) => (
+      <>
+        {i > 0 ? ', ' : ' '}
+        <svg class="key" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" rx="1" style={style} /></svg>
+        {' '}{role}
+      </>
+    ))
+  }.
+</p>
+
+<div class="md:hidden space-y-9">
+  {
+    lanes.map((lane) => (
+      <div class="grid gap-3">
+        <h3 class="display text-lg text-muted">{lane.name}</h3>
+        <ol class="lane">
+          {lane.stops.map((s) => {
+            const Tag = s.entry ? 'a' : 'div';
+            return (
+              <li class="m-stop relative">
+                <Tag href={s.entry ? `#entry-${s.entry}` : undefined} data-entry={s.entry} class:list={['block py-1', s.entry && 'group']}>
+                  <div class:list={['text-[0.95rem] font-semibold', s.entry && 'underline decoration-accent decoration-1 underline-offset-[0.2em] group-hover:text-accent']}>
+                    {s.role && <span class="glyph mr-1.5" data-role={s.role} aria-hidden="true"></span>}
+                    {s.label}
+                  </div>
+                  <div class="text-sm leading-snug text-faint">{s.sub}</div>
+                </Tag>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  /* Mobile: a vertical line down the left with a stop per node */
+  .m-stop {
+    padding: 0.35rem 0 0.35rem 1.25rem;
+    border-left: 2px solid var(--line);
+  }
+  .m-stop::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0.95rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--fg);
+  }
+
+  /* Desktop map */
+  .key {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    vertical-align: -0.05em;
+  }
+  .key-wide {
+    width: 1.6em;
+  }
+  .stop-label-link {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+  }
+  a:hover .stop-label-link,
+  a:focus-visible .stop-label-link {
+    fill: var(--accent);
+  }
+  .map.has-active .link {
+    opacity: 0.1 !important;
+  }
+  .map .link.is-active {
+    opacity: 1 !important;
+    stroke-width: 2.5 !important;
+  }
+  .map.has-active .stop:not(.is-related) {
+    opacity: 0.4;
+  }
+</style>
+
+<script>
+  // Hover or focus a stop to trace its links and the stops at their other end.
+  const map = document.querySelector<HTMLElement>('.map')!;
+  const links = [...map.querySelectorAll<SVGPathElement>('.link')];
+  const stops = [...map.querySelectorAll<SVGGElement>('.stop')];
+
+  const clear = () => {
+    map.classList.remove('has-active');
+    links.forEach((l) => l.classList.remove('is-active'));
+    stops.forEach((s) => s.classList.remove('is-related'));
+  };
+
+  const trace = (id: string) => {
+    map.classList.add('has-active');
+    const related = new Set([id]);
+    links
+      .filter((l) => l.dataset.from === id || l.dataset.to === id)
+      .forEach((l) => {
+        l.classList.add('is-active');
+        related.add(l.dataset.from!);
+        related.add(l.dataset.to!);
+      });
+    stops.filter((s) => related.has(s.dataset.id!)).forEach((s) => s.classList.add('is-related'));
+  };
+
+  stops.forEach((stop) => {
+    const id = stop.dataset.id!;
+    // Stops with a journey entry are wrapped in a link, which is the focusable element.
+    const trigger: Element = stop.closest('a') ?? stop;
+    trigger.addEventListener('pointerenter', () => trace(id));
+    trigger.addEventListener('focusin', () => trace(id));
+    trigger.addEventListener('pointerleave', clear);
+    trigger.addEventListener('focusout', clear);
+  });
+</script>
