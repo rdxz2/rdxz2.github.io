@@ -10,6 +10,6 @@ const m = (metrics.metrics as Record<string, { display: string; label: string; m
 if (!m) throw new Error(`Unknown metric id: ${id}`);
 ---
 
-<a href={`/numbers/#${id}`} title={`${m.method} (${m.window}, as of ${m.as_of})`} class="group inline text-sm text-muted">
-  <span class="figure font-semibold text-fg underline decoration-accent decoration-1 underline-offset-[0.2em] group-hover:text-accent">{m.display}</span>{' '}{m.label}
+<a href={`/numbers/#${id}`} title={`${m.method} (${m.window}, as of ${m.as_of})`} class="group/chip inline text-sm text-muted">
+  <span class="figure font-semibold text-fg underline decoration-accent decoration-1 underline-offset-[0.2em] group-hover/chip:text-accent">{m.display}</span>{' '}{m.label}
 </a>

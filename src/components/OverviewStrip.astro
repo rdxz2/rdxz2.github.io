@@ -45,7 +45,7 @@ const roleKeys = Object.keys(roles) as Role[];
     }
     {
       placed.map((e) => {
-        const h = e.flagship ? 12 : 7;
+        const h = e.featured ? 12 : 7;
         const w = Math.max(xOf(q(e.end) + 1) - xOf(q(e.start)) - 2, 4);
         return (
           <a
@@ -91,7 +91,7 @@ const roleKeys = Object.keys(roles) as Role[];
         </span>
       ))
     }
-    <span class="text-faint">Taller bars mark flagship projects.</span>
+    <span class="text-faint">Taller bars mark featured projects.</span>
   </div>
 </div>
 

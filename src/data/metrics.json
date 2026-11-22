@@ -1,10 +1,9 @@
 {
-  "as_of": "2026-11-19",
   "metrics": {
     "aws-bill-drop": {
       "display": "−98.6%",
-      "label": "data-platform AWS spend after moving to Google Cloud",
-      "method": "Monthly AWS invoices for the data account, peak (July 2023) vs October 2026 (indexed 100 → 1.4), after migrating data workloads to Google Cloud.",
+      "label": "data team's AWS invoice after moving to Google Cloud",
+      "method": "Monthly AWS invoices for the data account, peak (July 2023) vs October 2026 (indexed 100 → 1.4), after migrating data workloads to Google Cloud. This is the AWS invoice only: Google Cloud costs rose as workloads moved there, so it is not a net saving.",
       "window": "Jul 2023 vs Oct 2026",
       "as_of": "2026-11-17",
       "viz": {
@@ -106,18 +105,33 @@
         "caption": "94.1% via saved questions & dashboards, 5.9% ad-hoc visual queries"
       }
     },
-    "cdc-cloud-migration": {
-      "display": "90.7%",
-      "label": "of registered CDC tables actively streaming to BigQuery",
-      "method": "Share of tables in the CDC registry actively replicated from Postgres logical replication slots into BigQuery on Google Cloud, with 100% of streamers migrated off Alibaba Cloud.",
+    "cdc-tables": {
+      "display": "630+",
+      "label": "Postgres tables streaming into BigQuery from 20+ source databases",
+      "method": "Active tables in the CDC table registry (637 of 702 registered), replicated from Postgres logical replication slots across 24 source databases into BigQuery on Google Cloud. Every streamer moved off Alibaba Cloud in 2024.",
       "window": "point in time",
-      "as_of": "2026-11-17",
-      "viz": {
-        "type": "waffle",
-        "total": 100,
-        "on": 91,
-        "caption": "90.7% of registered CDC tables active (filled)"
-      }
+      "as_of": "2026-11-17"
+    },
+    "warehouse-size": {
+      "display": "250+ TiB",
+      "label": "of data in the BigQuery warehouse, by logical size",
+      "method": "Logical bytes across all data projects in BigQuery table-storage metadata (254 TiB), stored as about 42 TiB physical after compression.",
+      "window": "point in time",
+      "as_of": "2026-11-17"
+    },
+    "self-service-users": {
+      "display": "120+",
+      "label": "colleagues have used a self-service data workflow since launch",
+      "method": "Distinct people who submitted at least one workflow request in the self-service data-ops platform since it launched in September 2025 (124), from the platform's own database.",
+      "window": "2025-09 to 2026-11-17",
+      "as_of": "2026-11-17"
+    },
+    "self-service-requests": {
+      "display": "3,100+",
+      "label": "self-service requests: data access, table syncs, file exports, deploys and more",
+      "method": "Requests submitted through the self-service data-ops platform since it launched in September 2025 (3,179), from the platform's own database. Each one is a task that used to go through a data engineer.",
+      "window": "2025-09 to 2026-11-17",
+      "as_of": "2026-11-17"
     },
     "underwriting-cutover": {
       "display": "100%",
@@ -127,16 +141,16 @@
       "as_of": "2026-11-17"
     },
     "deploy-coverage": {
-      "display": "88%",
-      "label": "of the data team's service repos deploy through the self-service deploy platform",
+      "display": "8 of 9",
+      "label": "data-team service repos deploy through the self-service deploy platform",
       "method": "Service repos registered in the central deployment registry out of the data team's repos that run a service (8 of 9). The remaining one is a legacy service still on another team's pipeline.",
       "window": "point in time",
       "as_of": "2026-11-22",
       "viz": {
         "type": "waffle",
-        "total": 100,
-        "on": 88,
-        "caption": "88 of every 100 service repos deploy through the platform (filled)"
+        "total": 9,
+        "on": 8,
+        "caption": "8 of the data team's 9 service repos deploy through the platform (filled)"
       }
     },
     "metabase-managed-access": {
@@ -150,29 +164,6 @@
         "total": 100,
         "on": 100,
         "caption": "Every Metabase access group in use is platform-managed"
-      }
-    },
-    "two-person-team": {
-      "display": "40.6%",
-      "label": "of my time at JULO with a data engineering team of just two engineers",
-      "method": "Days since I joined on which no third data engineer was on the team. Each former data engineer's time on the team is estimated from their first and last commit in the platform's main repository. People usually join before their first commit and leave after their last, so the true share is likely lower.",
-      "window": "2021-10-13 to 2026-11-21",
-      "as_of": "2026-11-21"
-    },
-    "commit-share": {
-      "display": "43%",
-      "label": "of the data team's code changes since I joined are mine",
-      "method": "Non-merge commits across the 11 repositories the data team owns, from git history on all branches. Bots and shared machine accounts are excluded, each person's commit identities are merged, and my personal notebook repository is left out. The rest: 46.5% by other data engineers, past and present, and 10.3% by other teams.",
-      "window": "2021-10-13 to 2026-11-21",
-      "as_of": "2026-11-21",
-      "viz": {
-        "type": "stack",
-        "segments": [
-          { "label": "Me", "value": 43.0 },
-          { "label": "Other data engineers", "value": 46.5 },
-          { "label": "Other teams", "value": 10.3 }
-        ],
-        "caption": "Share of non-merge commits to the data team's repositories, by author"
       }
     }
   }

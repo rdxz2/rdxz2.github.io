@@ -12,7 +12,10 @@ const {
   description = 'Senior Data Engineer in Jakarta. I run the data platform behind an Indonesian lending fintech: ingestion, warehouse, BI and real-time ML scoring on Google Cloud.',
 } = Astro.props;
 
-const asOf = new Date(metrics.as_of).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL('/og.png', Astro.site).href;
+// Latest date any number on the site was measured
+const lastUpdated = new Date(Object.values(metrics.metrics).map((x) => x.as_of).sort().at(-1)!).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
 <!doctype html>
@@ -25,6 +28,13 @@ const asOf = new Date(metrics.as_of).toLocaleDateString('en-GB', { day: 'numeric
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Richard Dharmawan, Senior Data Engineer" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>
       document.documentElement.classList.add('js');
@@ -67,7 +77,7 @@ const asOf = new Date(metrics.as_of).toLocaleDateString('en-GB', { day: 'numeric
     </main>
 
     <footer class="mx-auto mt-28 flex max-w-5xl flex-wrap items-baseline justify-between gap-3 px-4 pt-6 pb-10 text-sm text-faint sm:px-6">
-      <span>Numbers measured as of <a href="/numbers/" class="ink-link text-muted">{asOf}</a></span>
+      <span>Last updated <a href="/numbers/" class="ink-link text-muted">{lastUpdated}</a></span>
       <span class="flex gap-5">
         <a href="https://www.linkedin.com/in/rdxz2" class="hover:text-fg">LinkedIn</a>
         <a href="https://github.com/rdxz2" class="hover:text-fg">GitHub</a>

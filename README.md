@@ -17,7 +17,7 @@ npm run preview   # serve dist/
 
 | What | File |
 |---|---|
-| Every percentage shown on the site, with method and "as of" | `src/data/metrics.json` |
+| Every number shown on the site, with method and "as of" | `src/data/metrics.json` |
 | The journey timeline | `src/data/timeline.ts` |
 | Charts (unit charts, career strip, skills matrix) | `src/components/MetricViz.astro`, `OverviewStrip.astro`, `SkillsMatrix.astro` |
 | Chart shapes per metric | `src/data/metrics.json → viz` |
@@ -27,7 +27,7 @@ npm run preview   # serve dist/
 | Linkable text (section headings, number labels): underline + `#` on hover, click only sets the URL | `src/components/AnchorLink.astro` |
 | Colours and typography | `src/styles/global.css` |
 
-Numbers are never typed into pages. Pages read them from `metrics.json` through `MetricChip` or directly. The footer's "Data as of" date is `metrics.json → as_of`.
+Numbers are never typed into pages. Pages read them from `metrics.json` through `MetricChip` or directly. The footer's "Last updated" date is the latest `as_of` across all metrics.
 
 ## Deploy (GitHub Pages)
 

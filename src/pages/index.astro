@@ -15,37 +15,26 @@ const m = metrics.metrics as Record<
   { display: string; label: string; method: string; window: string; as_of: string; viz?: unknown }
 >;
 
-// The hero paragraphs. Each figure comes from metrics.json and carries a numbered note with its method.
-const intro: (string | { id: string })[] = [
-  'For ',
-  { id: 'two-person-team' },
-  ' of my time at JULO, the data engineering team has been just a two-person team, as it is today. Together we run the data platform behind an Indonesian lending fintech: from Postgres data streams to the warehouse, the dashboards, and the models that score every customer.',
+// The hero: one value sentence, then three wins. Each figure comes from metrics.json and carries a numbered note with its method.
+const lede =
+  'I run the data platform behind an Indonesian lending fintech with one other engineer: Postgres CDC → BigQuery → Metabase → real-time ML scoring, on Google Cloud.';
+const wins: (string | { id: string })[][] = [
+  ["Cut the data team's AWS invoice by ", { id: 'aws-bill-drop' }, ' by moving the platform to Google Cloud.'],
+  ['Rebuilt real-time loan underwriting as an event-driven pipeline: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
+  ['Built the self-service platform that replaced data-team tickets for access, table syncs and deploys: ', { id: 'self-service-requests' }, ' requests from ', { id: 'self-service-users' }, ' colleagues so far.'],
 ];
-const lede: (string | { id: string })[] = [
-  'Moving the data platform off AWS cut our legacy AWS spend by ',
-  { id: 'aws-bill-drop' },
-  '. ',
-  { id: 'underwriting-cutover' },
-  ' of real-time loan scoring now runs on the event-driven pipeline I rebuilt, ',
-  { id: 'deploy-coverage' },
-  ' of our service repos deploy through one audited path, ',
-  { id: 'metabase-managed-access' },
-  ' of Metabase access is managed through our self-service platform, and ',
-  { id: 'medallion-docs' },
-  ' of medallion warehouse columns are documented in code.',
-];
-const paragraphs = [intro, lede];
-const notes = paragraphs.flat().filter((p) => typeof p !== 'string').map((p) => p.id);
+const notes = wins.flat().filter((p) => typeof p !== 'string').map((p) => p.id);
 const vizNotes = notes.filter((id) => m[id].viz).slice(0, 3);
 
 const years = [...new Set(entries.map((e) => e.year))].sort((a, b) => b - a);
 const roleCounts = Object.fromEntries(
   (Object.keys(roles) as Role[]).map((r) => [r, entries.filter((e) => e.role === r).length]),
 ) as Record<Role, number>;
+const featuredCount = entries.filter((e) => e.featured).length;
 
-// Three weight levels: flagship (featured cards), standard (expandable rows), compact (one line, expands).
+// Three weight levels: featured (cards), standard (expandable rows), compact (one line, expands).
 const levelOf = (e: Entry) => {
-  if (e.flagship) return 'flagship';
+  if (e.featured) return 'featured';
   if (e.role === 'learned' || e.role === 'retired') return 'compact';
   if (!e.details && !e.lesson && !e.metrics) return 'compact';
   return 'standard';
@@ -56,30 +45,51 @@ const levelOf = (e: Entry) => {
   <!-- Hero: the claim, with every figure footnoted -->
   <section class="hero pt-16 sm:pt-24">
     <h1 class="display text-[clamp(3.5rem,12vw,7.5rem)]">Richard<br />Dharmawan</h1>
-    <p class="mt-5 text-lg text-muted">Senior data engineer at JULO, Jakarta</p>
-    <p class="mt-2 text-muted">Talk to me on <a href="https://www.linkedin.com/in/rdxz2" class="ink-link text-fg">LinkedIn</a>.</p>
+    <p class="mt-5 text-lg text-muted">Senior Data Engineer · JULO, Jakarta</p>
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      <a href="mailto:richard.dharmawan@gmail.com" class="cta cta-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
+        Email
+      </a>
+      <a href="/richard-dharmawan-cv.pdf" class="cta" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></svg>
+        CV
+      </a>
+      <a href="https://www.linkedin.com/in/rdxz2" class="cta" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.064 2.064 0 1 1 0-4.128 2.064 2.064 0 0 1 0 4.128zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+        LinkedIn
+      </a>
+      <a href="https://wa.me/6287888164619" class="cta" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
+        WhatsApp
+      </a>
+    </div>
+    <p class="mt-3 text-sm text-muted">Happy to talk about Lead data engineering roles.</p>
 
     <div class="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
       <div class="hero-in-left">
-        <div class="space-y-5 text-[1.25rem] leading-[1.55] sm:text-[1.4rem]">
-          {
-            paragraphs.map((parts) => (
-              <p>
-                {parts.map((part) =>
-                  typeof part === 'string' ? (
-                    part
-                  ) : (
-                    <a href={`#note-${part.id}`} class="figure font-semibold whitespace-nowrap hover:text-accent">
-                      {/* The prose already says "cut ... by" / "reduced ... by", so drop the leading sign */}
-                      {m[part.id].display.replace(/^−|\+/g, '')}
-                      <sup class="ml-0.5 text-[0.6em] font-bold text-accent">{notes.indexOf(part.id) + 1}</sup>
-                    </a>
-                  ),
-                )}
-              </p>
-            ))
-          }
-          <p class="text-muted">Built on lean architecture, reliable and automated, accelerated with AI.</p>
+        <div class="text-[1.25rem] leading-[1.55] sm:text-[1.4rem]">
+          <p>{lede}</p>
+          <ul class="mt-5 space-y-3 text-[1.05rem] leading-[1.5] sm:text-[1.15rem]">
+            {
+              wins.map((parts) => (
+                <li class="relative pl-5">
+                  <span class="absolute left-0 text-accent" aria-hidden="true">→</span>
+                  {parts.map((part) =>
+                    typeof part === 'string' ? (
+                      part
+                    ) : (
+                      <a href={`#note-${part.id}`} class="figure font-semibold whitespace-nowrap hover:text-accent">
+                        {/* The prose already says "cut ... by" / "reduced ... by", so drop the leading sign */}
+                        {m[part.id].display.replace(/^[−+]/, '')}
+                        <sup class="ml-0.5 text-[0.6em] font-bold text-accent">{notes.indexOf(part.id) + 1}</sup>
+                      </a>
+                    ),
+                  )}
+                </li>
+              ))
+            }
+          </ul>
         </div>
 
         <div class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3">
@@ -112,7 +122,7 @@ const levelOf = (e: Entry) => {
             ))
           }
         </ol>
-        <a href="/numbers/" class="ink-link mt-5 ml-5 inline-block text-sm">All {Object.keys(m).length} percentages and how they were measured</a>
+        <a href="/numbers/" class="ink-link mt-5 ml-5 inline-block text-sm">All {Object.keys(m).length} numbers and how they were measured</a>
       </aside>
     </div>
   </section>
@@ -131,13 +141,19 @@ const levelOf = (e: Entry) => {
   <section id="journey" class="mt-28 scroll-mt-8">
     <SectionHeading id="journey">The journey</SectionHeading>
     <p class="mt-3 max-w-2xl text-muted">
-      Everything I've done at JULO and before: what I built / co-own / learned the hard way, and
+      Everything I've done at JULO and before: what I built / co-owned / learned the hard way, and
       what I shipped and then retired. Open any entry for the details.
+    </p>
+    <p class="mt-2 max-w-2xl text-sm text-muted">
+      Entries marked AI were built with an AI coding assistant: I write the design and the project's guardrails, it drafts, and I review every change before it ships.
     </p>
     <div class="mt-8"><OverviewStrip /></div>
 
     <div class="mt-7 flex flex-wrap gap-2" role="group" aria-label="Filter the journey">
-      <button type="button" data-filter="all" aria-pressed="true" class="filter-btn">
+      <button type="button" data-filter="featured" aria-pressed="true" class="filter-btn">
+        Featured <span class="figure">{featuredCount}</span>
+      </button>
+      <button type="button" data-filter="all" aria-pressed="false" class="filter-btn">
         All <span class="figure">{entries.length}</span>
       </button>
       {
@@ -186,18 +202,19 @@ const levelOf = (e: Entry) => {
                     id={`entry-${e.id}`}
                     class="entry relative scroll-mt-24 pl-6"
                     data-role={e.role}
+                    data-featured={e.featured ? 'true' : undefined}
                     data-skills={(e.skills ?? []).join('|')}
                   >
                     <span
                       class={
-                        level === 'flagship'
+                        level === 'featured'
                           ? 'glyph absolute top-[1.25rem] -left-[9px] z-20 h-4 w-4'
                           : 'glyph absolute top-[1.25rem] -left-[7px] z-20'
                       }
                       aria-hidden="true"
                     />
 
-                    {level === 'flagship' && (
+                    {level === 'featured' && (
                       <div class="my-3 rounded-[3px] border border-line border-l-[3px] border-l-blue bg-surface p-5">
                         <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                           <span class="figure text-sm text-faint">{dateOnly}</span>
@@ -232,16 +249,16 @@ const levelOf = (e: Entry) => {
                     )}
 
                     {level === 'standard' && (
-                      <details class="group py-3">
+                      <details class="py-3">
                         <summary class="cursor-pointer">
                           <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
                             <span class="figure text-sm text-faint">{dateOnly}</span>
                             <Badge role={e.role} ai={e.aiAccelerated} />
                           </div>
-                          <div class="mt-1 flex items-start gap-2">
+                          <div class="group/row mt-1 flex items-start gap-2">
                             <span class="chevron mt-[0.1rem] w-3 shrink-0 text-faint transition-transform" aria-hidden="true">›</span>
                             <div class="max-w-2xl">
-                              <div class="text-[1.05rem] font-semibold leading-snug group-hover:text-accent">{e.title}</div>
+                              <div class="text-[1.05rem] font-semibold leading-snug group-hover/row:text-accent">{e.title}</div>
                               <p class="mt-1 leading-relaxed text-muted">{e.summary}</p>
                             </div>
                           </div>
@@ -298,24 +315,6 @@ const levelOf = (e: Entry) => {
     </div>
   </section>
 
-  <!-- Commit share -->
-  <section id="commits" class="mt-28 scroll-mt-8">
-    <SectionHeading id="commits">Who wrote the code</SectionHeading>
-    <p class="mt-3 mb-8 max-w-2xl text-muted">
-      Every non-merge commit to the data team's repositories since I joined in October 2021, by author.
-    </p>
-    <div class="grid max-w-4xl gap-6 sm:grid-cols-[11rem_1fr] sm:gap-8">
-      <p>
-        <span class="display figure block text-[2.6rem] leading-none" style="view-transition-name: m-commit-share">{m['commit-share'].display}</span>
-        <span class="mt-2 block text-sm text-muted">{m['commit-share'].label}</span>
-      </p>
-      <div>
-        <MetricViz id="commit-share" />
-        <a href="/numbers/#commit-share" class="ink-link mt-4 inline-block text-sm">How this was counted</a>
-      </div>
-    </div>
-  </section>
-
   <!-- Side projects -->
   <section id="side-projects" class="mt-28 scroll-mt-8">
     <SectionHeading id="side-projects">On the side</SectionHeading>
@@ -358,14 +357,6 @@ const levelOf = (e: Entry) => {
     <SkillsMatrix />
   </section>
 
-  <!-- Contact -->
-  <section id="contact" class="mt-28 scroll-mt-8">
-    <SectionHeading id="contact">Get in touch</SectionHeading>
-    <p class="mt-4 max-w-xl text-lg text-muted">
-      Happy to talk data platforms, in English or Bahasa Indonesia. The fastest way to reach me is
-      <a href="https://www.linkedin.com/in/rdxz2" class="ink-link text-fg">LinkedIn</a>.
-    </p>
-  </section>
 </Base>
 
 <style>
@@ -385,6 +376,33 @@ const levelOf = (e: Entry) => {
   }
   .filter-btn .figure {
     color: var(--faint);
+  }
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.95rem;
+    color: var(--fg);
+  }
+  .cta svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex-shrink: 0;
+  }
+  .cta:hover {
+    border-color: var(--faint);
+  }
+  .cta-primary {
+    background: var(--accent-fill);
+    border-color: var(--accent-fill);
+    color: #0E1B2E;
+  }
+  .cta-primary:hover {
+    border-color: var(--accent-fill);
+    filter: brightness(1.05);
   }
   .filter-btn[aria-pressed='true'] {
     background: var(--accent-fill);
@@ -415,7 +433,7 @@ const levelOf = (e: Entry) => {
       }
     }
   }
-  /* Hero entrance on a fresh load: the story slides in from the left, the footnotes from the right. Name, title and LinkedIn line stay put.
+  /* Hero entrance on a fresh load: the story slides in from the left, the footnotes from the right. Name, title and contact buttons stay put.
      Skipped when arriving by view transition (html.vt-arrival, set in Base), where the numbers already morph. */
   .hero {
     overflow-x: clip; /* the right-hand slide would otherwise add a horizontal scrollbar on phones */
@@ -446,7 +464,7 @@ const levelOf = (e: Entry) => {
     box-shadow: 0 0 0 100vmax var(--surface);
     clip-path: inset(0 -100vmax);
   }
-  /* .glyph is unlayered CSS, so it beats Tailwind's h-4/w-4 utilities; size flagship markers here. */
+  /* .glyph is unlayered CSS, so it beats Tailwind's h-4/w-4 utilities; size featured markers here. */
   .glyph.h-4 {
     width: 1rem;
     height: 1rem;
@@ -457,7 +475,7 @@ const levelOf = (e: Entry) => {
   import { blinkWhenScrolled } from '../scripts/blink';
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  let role = 'all';
+  let role = 'featured';
   let skill: string | null = null;
   const roleBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
   const skillBtns = document.querySelectorAll<HTMLButtonElement>('.skill-btn');
@@ -465,7 +483,7 @@ const levelOf = (e: Entry) => {
 
   const apply = () => {
     document.querySelectorAll<HTMLElement>('.entry').forEach((el) => {
-      const roleOk = role === 'all' || el.dataset.role === role;
+      const roleOk = role === 'all' || (role === 'featured' ? el.dataset.featured === 'true' : el.dataset.role === role);
       const skillOk = !skill || (el.dataset.skills ?? '').split('|').includes(skill);
       el.hidden = !(roleOk && skillOk);
     });
@@ -490,7 +508,10 @@ const levelOf = (e: Entry) => {
   };
   roleBtns.forEach((b) => b.addEventListener('click', () => update(() => { role = b.dataset.filter!; })));
   skillBtns.forEach((b) => b.addEventListener('click', () => {
-    update(() => { skill = skill === b.dataset.skill ? null : b.dataset.skill!; });
+    update(() => {
+      if (role === 'featured') role = 'all';
+      skill = skill === b.dataset.skill ? null : b.dataset.skill!;
+    });
     document.getElementById('journey')!.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth' });
   }));
   document.getElementById('skill-clear')!.addEventListener('click', () => update(() => { skill = null; }));
@@ -505,4 +526,5 @@ const levelOf = (e: Entry) => {
     }
     blinkWhenScrolled(target);
   }));
+  apply();
 </script>
