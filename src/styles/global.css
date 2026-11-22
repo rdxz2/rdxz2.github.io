@@ -112,97 +112,92 @@ html.theme-switching::view-transition-new(root) {
   to { clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0)); }
 }
 
-/* Skills matrix cell shade. The scroll-driven block below scales it by the grid's --fill;
-   --fill starts at 1, so cells show at full shade wherever that animation doesn't run. */
+/* Skills matrix cell shade. The scroll-driven block below scales it by --reveal;
+   --reveal-v starts at 1, so cells show at full shade wherever that animation doesn't run. */
 .skills-grid .cell {
   opacity: var(--shade, 1);
 }
-@property --fill {
+@property --reveal-v {
   syntax: '<number>';
   inherits: true;
   initial-value: 1;
 }
+@property --reveal-tail {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
 
 /*
   Scroll-driven reveals: platform map lines, overview strip, skills matrix, unit charts.
-  One animation per chart, never per cell or bar: thousands of scroll timelines make scrolling stutter.
+  One reveal per chart, never per cell or bar: thousands of scroll timelines make scrolling stutter.
   Opacity and transform run on the compositor; the strip's clip-path wipe repaints one small SVG.
 
   Every reveal shares one start and end, measured from the element's top edge entering the screen:
   start once the top has risen --reveal-start above the bottom of the screen, done at --reveal-end.
-  Change these two to retime every reveal on the site.
+  A second timeline on the root scroll finishes any reveal near the bottom of the page that can
+  never scroll up to --reveal-end (e.g. the last skills group or the last metric on /numbers/),
+  running at the same scroll speed over the final (--reveal-end - --reveal-start) of the page.
+  Change --reveal-start / --reveal-end to retime every reveal on the site.
 */
 :root {
   --reveal-start: 10vh; /* top 10% up from the bottom */
   --reveal-end: 50vh; /* top at the middle of the screen */
 }
-@supports (animation-timeline: view()) {
+@supports (animation-timeline: view()) and (animation-timeline: scroll(root)) {
   @media (prefers-reduced-motion: no-preference) {
     /* Longhands only, never the `animation` shorthand: the build's CSS minifier (Lightning CSS)
        folds animation-timeline into the shorthand, which browsers reject, and the reveal never runs. */
-    .draw-on-scroll .flow,
+    .draw-on-scroll,
     .wipe-on-scroll > svg,
     .skills-grid,
-    .grow-on-scroll .bar,
+    .grow-on-scroll,
     .fill-on-scroll > svg {
+      --reveal: max(var(--reveal-v), var(--reveal-tail));
+      animation-name: reveal-view, reveal-tail;
       animation-timing-function: linear;
       animation-fill-mode: both;
-      animation-timeline: view();
-      animation-range: cover var(--reveal-start) cover var(--reveal-end);
+      animation-timeline: view(), scroll(root);
+      animation-range:
+        cover var(--reveal-start) cover var(--reveal-end),
+        calc(100% - (var(--reveal-end) - var(--reveal-start))) 100%;
+    }
+    @keyframes reveal-view {
+      from { --reveal-v: 0; }
+      to { --reveal-v: 1; }
+    }
+    @keyframes reveal-tail {
+      from { --reveal-tail: 0; }
+      to { --reveal-tail: 1; }
     }
 
-    /* Map: every line shares the map's timeline, so they draw together */
-    .draw-on-scroll {
-      view-timeline: --map;
-    }
+    /* Map: every line reads the map's progress, so they draw together */
     .draw-on-scroll .flow {
       stroke-dasharray: 1;
-      stroke-dashoffset: 1;
-      animation-name: draw;
-      animation-timeline: --map;
-    }
-    @keyframes draw {
-      to { stroke-dashoffset: 0; }
+      stroke-dashoffset: calc(1 - var(--reveal));
     }
 
     /* Overview strip: the whole SVG wipes in from the left, in time order */
     .wipe-on-scroll > svg {
-      animation-name: wipe;
-    }
-    @keyframes wipe {
-      from { clip-path: inset(0 100% 0 0); }
-      to { clip-path: inset(0 0 0 0); }
+      clip-path: inset(0 calc((1 - var(--reveal)) * 100%) 0 0);
     }
 
-    /* Skills matrix: in each group's grid (four in all) the filled cells light up in random order.
-       Still one timeline per grid: the grid animates --fill from 0 to 1 and each cell only reads it,
-       appearing once --fill passes its own random --t. Labels, years and empty cells always show. */
-    .skills-grid {
-      animation-name: fill-cells;
-    }
+    /* Skills matrix: in each group's grid the filled cells light up in random order.
+       Still one reveal per grid: each cell only reads --reveal and appears once it passes
+       its own random --t. Labels, years and empty cells always show. */
     .skills-grid .cell {
-      opacity: calc(var(--shade, 1) * clamp(0, (var(--fill) - var(--t, 0)) * 7, 1));
-    }
-    @keyframes fill-cells {
-      from { --fill: 0; }
-      to { --fill: 1; }
+      opacity: calc(var(--shade, 1) * clamp(0, (var(--reveal) - var(--t, 0)) * 7, 1));
     }
 
     /* Before/after bars (HTML, two per chart) */
     .grow-on-scroll .bar {
       transform-origin: left center;
-      animation-name: grow;
-    }
-    @keyframes grow {
-      from { transform: scaleX(0); }
+      transform: scaleX(var(--reveal));
     }
 
     /* Unit charts: the chart fades in as one piece */
     .fill-on-scroll > svg {
-      animation-name: fill;
-    }
-    @keyframes fill {
-      from { opacity: 0.1; }
+      opacity: calc(0.1 + 0.9 * var(--reveal));
     }
   }
 }
