@@ -20,7 +20,7 @@ const lede =
   'I run the data platform behind an Indonesian lending fintech with one other engineer: Postgres CDC → BigQuery → Metabase → real-time ML scoring, on Google Cloud.';
 const wins: (string | { id: string })[][] = [
   ["Cut the data team's AWS invoice by ", { id: 'aws-bill-drop' }, ' by moving the platform to Google Cloud.'],
-  ['Rebuilt real-time loan underwriting as an event-driven pipeline: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
+  ['Moved real-time loan underwriting off a Python 3.6 stack onto one we own, endpoint by endpoint: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
   ['Built the self-service platform that replaced data-team tickets for access, table syncs and deploys: ', { id: 'self-service-requests' }, ' requests from ', { id: 'self-service-users' }, ' colleagues so far.'],
 ];
 const notes = wins.flat().filter((p) => typeof p !== 'string').map((p) => p.id);
@@ -31,6 +31,46 @@ const roleCounts = Object.fromEntries(
   (Object.keys(roles) as Role[]).map((r) => [r, entries.filter((e) => e.role === r).length]),
 ) as Record<Role, number>;
 const featuredCount = entries.filter((e) => e.featured).length;
+
+// How I work: each point from the owner's own account, linked to the entries that show it.
+const howIWork: { title: string; text: string; entries?: string[] }[] = [
+  {
+    title: 'Requirements first, findings as I go',
+    text: 'I ask stakeholders what they need and what result they expect, share findings while I build, then ship it live while they sanity-check the output.',
+  },
+  {
+    title: 'Risky changes go out in stages',
+    text: 'Two streamers side by side for the CDC move, endpoint by endpoint for underwriting. I know how to roll back before I start, and roll back live if a step fails.',
+    entries: ['cdc-alibaba-to-gcp', 'realtime-underwriting'],
+  },
+  {
+    title: 'Build before buy',
+    text: 'We build, or find a workaround, and buy only when it is clearly worth it: Metabase Community Edition with our own semantic-layer sync, our own deploy page instead of a CI service. Cloud spend gets a monthly review.',
+    entries: ['semantic-layer', 'deploy-platform'],
+  },
+  {
+    title: 'Reviews look past the diff',
+    text: 'In a pull request I look at the core change, where it could be faster or cheaper, and which features or flows it could affect, then report back to its author.',
+    entries: ['medallion-warehouse'],
+  },
+  {
+    title: 'Work in the open',
+    text: 'Requirements, findings, test results and migration scripts go on the ticket or the pull request, next to the change they belong to.',
+  },
+  {
+    title: 'On call for everything we run',
+    text: 'Slack alerts are never muted. After a change that might break, I set an alarm to check at 3am. A night-time failure gets a quick fix, the proper fix lands the same day, and the same error twice is not acceptable.',
+  },
+  {
+    title: 'No single point of failure',
+    text: 'Either engineer on the team can deploy, debug and fix every system. What you need to know is in code comments and AI-assistant docs, and I gave brownbag talks in 2022 and 2023.',
+  },
+  {
+    title: 'Clear ownership',
+    text: 'I push back when asked to take over work another team owns, such as filling tables that belong to the backend.',
+  },
+];
+const entryTitle = (id: string) => entries.find((e) => e.id === id)!.title;
 
 // Three weight levels: featured (cards), standard (expandable rows), compact (one line, expands).
 const levelOf = (e: Entry) => {
@@ -313,6 +353,32 @@ const levelOf = (e: Entry) => {
         </div>
       ))}
     </div>
+  </section>
+
+  <!-- How I work -->
+  <section id="how-i-work" class="mt-28 scroll-mt-8">
+    <SectionHeading id="how-i-work">How I work</SectionHeading>
+    <dl class="mt-8 grid max-w-4xl gap-x-10 gap-y-7 sm:grid-cols-2">
+      {
+        howIWork.map((h) => (
+          <div>
+            <dt class="font-semibold">{h.title}</dt>
+            <dd class="mt-1 leading-relaxed text-muted">
+              {h.text}
+              {h.entries && (
+                <span class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {h.entries.map((id) => (
+                    <a href={`#entry-${id}`} data-entry={id} class="ink-link">
+                      {entryTitle(id)}
+                    </a>
+                  ))}
+                </span>
+              )}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
   </section>
 
   <!-- Side projects -->

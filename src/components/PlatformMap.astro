@@ -28,7 +28,7 @@ const lanes: { name: string; y: number; stops: Stop[] }[] = [
     y: 225,
     stops: [
       { id: 'application', label: 'Loan application', sub: 'events from the app' },
-      { id: 'orchestrator', label: 'Orchestrator', sub: 'event-driven, A/B', role: 'built', entry: 'realtime-underwriting' },
+      { id: 'orchestrator', label: 'Orchestrator', sub: 'scoring workflow, A/B', role: 'built', entry: 'realtime-underwriting' },
       { id: 'features', label: 'Feature service', sub: 'point-in-time features', role: 'built', entry: 'realtime-feature-service' },
       { id: 'models', label: 'Model containers', sub: 'one per version', role: 'built', entry: 'model-per-container' },
       { id: 'decision', label: 'Decision', sub: 'rules, moving to backend' },

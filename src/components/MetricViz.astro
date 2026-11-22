@@ -15,17 +15,23 @@ const isGrid = viz?.type === 'waffle' || viz?.type === 'people';
 const cell = md ? 8 : 5;
 const gap = md ? 2 : 1;
 const step = cell + gap;
-const cols = isGrid ? Math.min(viz.total, md ? 50 : 30) : 0;
-const rows = isGrid ? Math.ceil(viz.total / cols) : 0;
+// Every row is full: use the widest column count that divides the total.
+// If none is at least half the max width (e.g. a prime total), keep the max
+// width and scale the fill onto full rows, rounded down (approximate).
+const maxCols = isGrid ? Math.min(viz.total, md ? 50 : 30) : 0;
+let cols = maxCols;
+while (isGrid && viz.total % cols) cols--;
+if (cols < maxCols / 2) cols = maxCols;
+const rows = isGrid ? Math.max(Math.round(viz.total / cols), 1) : 0;
+const cells = cols * rows;
+const on = viz?.on === undefined ? cells : Math.floor((viz.on * cells) / viz.total);
 const gridW = cols * step - gap;
 const gridH = rows * step - gap;
-const gridCells = isGrid
-  ? Array.from({ length: viz.total as number }, (_, i) => ({
-      x: (i % cols) * step,
-      y: Math.floor(i / cols) * step,
-      fill: viz.on === undefined || i < viz.on ? 'var(--blue)' : 'var(--blue-soft)',
-    }))
-  : [];
+const gridCells = Array.from({ length: cells }, (_, i) => ({
+  x: (i % cols) * step,
+  y: Math.floor(i / cols) * step,
+  fill: i < on ? 'var(--blue)' : 'var(--blue-soft)',
+}));
 
 // Nested squares: outer is the whole, inner is its area share.
 const isNested = viz?.type === 'nested';

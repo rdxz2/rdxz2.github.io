@@ -19,6 +19,8 @@ npm run preview   # serve dist/
 |---|---|
 | Every number shown on the site, with method and "as of" | `src/data/metrics.json` |
 | The journey timeline | `src/data/timeline.ts` |
+| Case studies (one page each at `/work/<slug>/`, linked from their journey entry) | `src/data/cases.ts`, `src/pages/work/[slug].astro` |
+| CV (source HTML; PDF in `public/`) | `cv/richard-dharmawan-cv.html` |
 | Charts (unit charts, career strip, skills matrix) | `src/components/MetricViz.astro`, `OverviewStrip.astro`, `SkillsMatrix.astro` |
 | Chart shapes per metric | `src/data/metrics.json → viz` |
 | Platform map on the home page | `src/components/PlatformMap.astro` |

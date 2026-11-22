@@ -88,7 +88,7 @@
       "viz": {
         "type": "waffle",
         "total": 100,
-        "on": 87,
+        "on": 86,
         "caption": "86.6% of declared warehouse columns documented (filled)"
       }
     },
@@ -136,7 +136,7 @@
     "underwriting-cutover": {
       "display": "100%",
       "label": "of real-time underwriting traffic migrated off the legacy monolith",
-      "method": "Share of production loan-application scoring traffic routed through the new event-driven orchestrator and containerised model services after shadow validation and proxy cutover.",
+      "method": "Share of production loan-application scoring traffic handled by the re-platformed underwriting service instead of the old one, after an endpoint-by-endpoint rollout behind an experiment group. The old service now only forwards each call.",
       "window": "since 2026-09",
       "as_of": "2026-11-17"
     },

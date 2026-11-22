@@ -50,14 +50,14 @@
   <p class="dates">Senior Data Engineer, Nov 2023 – Present<br>Data Engineer, Oct 2021 – Nov 2023</p>
   <p class="note">Figures as of Nov 2026. How each one was measured: rdxz2.github.io/numbers</p>
   <ul>
-    <li><b>Real-time underwriting</b> <span class="tag">(built)</span>: rebuilt loan-application scoring as an event-driven orchestrator with one stateless container per model, A/B champion/challenger routing and shadow-mode parity checks. 100% of scoring traffic moved off the legacy monolith with no backend change.</li>
-    <li><b>Self-service data-ops platform</b> <span class="tag">(built solo)</span>: one internal web app for data access, table syncs, file exports and deploys, with approvals and audit trails: 3,100+ requests from 120+ colleagues since Sep 2025.</li>
+    <li><b>Real-time underwriting</b> <span class="tag">(built)</span>: moved loan-application scoring off a Python 3.6 service on another team's infrastructure onto a stack the data team owns (Python 3.14, uv, Docker, Redis, one VM). The logic stayed the same. Rolled out endpoint by endpoint behind an experiment group, and 100% of scoring traffic moved with no backend change.</li>
+    <li><b>Self-service data-ops platform</b> <span class="tag">(built solo)</span>: one internal web app for data access, table syncs, file exports and deploys, with approvals and audit trails. 3,100+ requests from 120+ colleagues since Sep 2025.</li>
     <li><b>Deploys and access governance</b> <span class="tag">(built)</span>: one audited deploy path with no long-lived keys, used by 8 of 9 data-team service repos. 100% of Metabase access sits in groups the platform manages, with grants that expire on their own.</li>
     <li><b>Semantic layer</b> <span class="tag">(built)</span>: company KPIs defined once in dbt MetricFlow, synced into Metabase Community Edition by my Python reconciler. 94.1% of governed queries run from saved dashboards, with no SQL written.</li>
     <li><b>AWS → Google Cloud</b> <span class="tag">(co-owned)</span>: with a teammate, migrated the Airflow codebase, infrastructure, VMs and networks. Data-platform workloads now run entirely on Google Cloud, and the data team's AWS invoice is down 98.6%.</li>
-    <li><b>CDC and medallion warehouse</b> <span class="tag">(co-owned)</span>: scaled, moved off Alibaba Cloud and operate CDC streaming 630+ Postgres tables from 20+ databases into a 250+ TiB BigQuery warehouse. Main reviewer of the dbt warehouse and author of its layer contracts and CI/CD; 86.6% of its columns documented.</li>
+    <li><b>CDC and medallion warehouse</b> <span class="tag">(co-owned)</span>: scaled, moved off Alibaba Cloud and operate CDC streaming 630+ Postgres tables from 20+ databases into a 250+ TiB BigQuery warehouse. Main reviewer of the dbt warehouse and author of its layer contracts and CI/CD. 86.6% of its columns are documented.</li>
     <li><b>ML in production</b> <span class="tag">(built)</span>: a new model version went live, batch or real-time, in 90.4% of quarters since I joined. Pruned AutoGluon artifacts by 71% with identical predictions.</li>
-    <li><b>FinOps</b> <span class="tag">(built)</span>: halved the reserved BigQuery slot capacity (−50%) by moving BI traffic to on-demand billing; moved training VMs to Spot.</li>
+    <li><b>FinOps</b> <span class="tag">(built)</span>: halved the reserved BigQuery slot capacity (−50%) by moving BI traffic to on-demand billing. Moved training VMs to Spot.</li>
   </ul>
 
   <h3 style="margin-top: 3.5mm">Software Engineer, PT Indomarco Prismatama</h3>
@@ -69,7 +69,7 @@
   <h2>How I Use AI</h2>
   <p style="margin-top: 1.2mm">I write the design and the project's guardrails, an AI coding assistant (Claude) drafts, and I review every change before it ships.</p>
   <ul>
-    <li>Built this way: the deploy platform, the real-time underwriting rebuild, the semantic layer and Metabase access governance. I wrote the data-ops platform myself; it is now maintained with Claude.</li>
+    <li>Built this way: the deploy platform, the real-time underwriting move, the semantic layer and Metabase access governance. I wrote the data-ops platform myself, and it is now maintained with Claude.</li>
     <li>Wrote the guardrails and skills that AI coding assistants follow in the medallion warehouse.</li>
     <li>Built, then retired, a BigQuery AI agent with MCP tools, a pgvector RAG library and LLM-judged evals. Lesson: an agent is only as good as the definitions under it, so I built the semantic layer first.</li>
     <li>On the side: a to-do app with its own MCP server, so Claude plans and tracks my tasks with me, and my personal site.</li>
