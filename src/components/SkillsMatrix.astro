@@ -18,20 +18,19 @@ const shade = [
 ];
 ---
 
-<div class="skills-matrix" role="group" aria-label="Skills, by years used in the journey">
+<div class="skills-matrix grid gap-x-12 gap-y-8 md:grid-cols-2" role="group" aria-label="Skills, by years used in the journey">
   {
     skillGroups.map((g) => (
-      <>
-        <h3 class="display text-xl mt-8 first:mt-0">{g.group}</h3>
+      <div>
+        <h3 class="display text-xl">{g.group}</h3>
         <div
           class="skills-grid grid items-center gap-[3px]"
-          style={`grid-template-columns: minmax(7rem, 13rem) repeat(${years.length}, 14px) 2rem`}
+          style={`grid-template-columns: minmax(7rem, 13rem) repeat(${years.length}, 14px)`}
         >
           <span />
           {years.map((Y) => (
             <span class="text-[10px] text-faint figure text-center">{String(Y).slice(2)}</span>
           ))}
-          <span />
           {g.items.map((s) => (
             <>
               <button
@@ -55,11 +54,10 @@ const shade = [
                   ></span>
                 );
               })}
-              <span class="text-xs text-faint figure">{usedIn(s).length}</span>
             </>
           ))}
         </div>
-      </>
+      </div>
     ))
   }
 </div>

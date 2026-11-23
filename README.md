@@ -25,6 +25,7 @@ npm run preview   # serve dist/
 | Chart shapes per metric | `src/data/metrics.json → viz` |
 | Platform map on the home page | `src/components/PlatformMap.astro` |
 | Page shell, header, footer, theme toggle | `src/layouts/Base.astro` |
+| Sitemap and robots | `src/pages/sitemap.xml.ts`, `public/robots.txt` |
 | Linkable section headings (hover `#`, link in the URL bar) | `src/components/SectionHeading.astro` |
 | Linkable text (section headings, number labels): underline + `#` on hover, click only sets the URL | `src/components/AnchorLink.astro` |
 | Colours and typography | `src/styles/global.css` |

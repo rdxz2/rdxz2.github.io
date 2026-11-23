@@ -15,16 +15,15 @@ const m = metrics.metrics as Record<
   { display: string; label: string; method: string; window: string; as_of: string; viz?: unknown }
 >;
 
-// The hero: one value sentence, then three wins. Each figure comes from metrics.json and carries a numbered note with its method.
+// The hero: one value sentence, then three wins, leverage first. Each figure comes from metrics.json and carries a numbered note with its method.
 const lede =
-  'I run the data platform behind an Indonesian lending fintech with one other engineer: Postgres CDC → BigQuery → Metabase → real-time ML scoring, on Google Cloud.';
+  'With one other engineer, I run the data platform behind an Indonesian lending fintech: Postgres CDC → BigQuery → Metabase → real-time ML scoring, on Google Cloud.';
 const wins: (string | { id: string })[][] = [
-  ["Cut the data team's AWS invoice by ", { id: 'aws-bill-drop' }, ' by moving the platform to Google Cloud.'],
-  ['Moved real-time loan underwriting off a Python 3.6 stack onto one we own, endpoint by endpoint: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
+  ['Kept ', { id: 'cdc-tables' }, ' Postgres tables streaming into a ', { id: 'warehouse-size' }, ' BigQuery warehouse.'],
   ['Built the self-service platform that replaced data-team tickets for access, table syncs and deploys: ', { id: 'self-service-requests' }, ' requests from ', { id: 'self-service-users' }, ' colleagues so far.'],
+  ['Moved real-time loan underwriting off a Python 3.6 stack onto one we owned, endpoint by endpoint: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
 ];
 const notes = wins.flat().filter((p) => typeof p !== 'string').map((p) => p.id);
-const vizNotes = notes.filter((id) => m[id].viz).slice(0, 3);
 
 const years = [...new Set(entries.map((e) => e.year))].sort((a, b) => b - a);
 const roleCounts = Object.fromEntries(
@@ -32,45 +31,17 @@ const roleCounts = Object.fromEntries(
 ) as Record<Role, number>;
 const featuredCount = entries.filter((e) => e.featured).length;
 
-// How I work: each point from the owner's own account, linked to the entries that show it.
-const howIWork: { title: string; text: string; entries?: string[] }[] = [
-  {
-    title: 'Requirements first, findings as I go',
-    text: 'I ask stakeholders what they need and what result they expect, share findings while I build, then ship it live while they sanity-check the output.',
-  },
-  {
-    title: 'Risky changes go out in stages',
-    text: 'Two streamers side by side for the CDC move, endpoint by endpoint for underwriting. I know how to roll back before I start, and roll back live if a step fails.',
-    entries: ['cdc-alibaba-to-gcp', 'realtime-underwriting'],
-  },
-  {
-    title: 'Build before buy',
-    text: 'We build, or find a workaround, and buy only when it is clearly worth it: Metabase Community Edition with our own semantic-layer sync, our own deploy page instead of a CI service. Cloud spend gets a monthly review.',
-    entries: ['semantic-layer', 'deploy-platform'],
-  },
-  {
-    title: 'Reviews look past the diff',
-    text: 'In a pull request I look at the core change, where it could be faster or cheaper, and which features or flows it could affect, then report back to its author.',
-    entries: ['medallion-warehouse'],
-  },
-  {
-    title: 'Work in the open',
-    text: 'Requirements, findings, test results and migration scripts go on the ticket or the pull request, next to the change they belong to.',
-  },
-  {
-    title: 'On call for everything we run',
-    text: 'Slack alerts are never muted. After a change that might break, I set an alarm to check at 3am. A night-time failure gets a quick fix, the proper fix lands the same day, and the same error twice is not acceptable.',
-  },
-  {
-    title: 'No single point of failure',
-    text: 'Either engineer on the team can deploy, debug and fix every system. What you need to know is in code comments and AI-assistant docs, and I gave brownbag talks in 2022 and 2023.',
-  },
-  {
-    title: 'Clear ownership',
-    text: 'I push back when asked to take over work another team owns, such as filling tables that belong to the backend.',
-  },
+// Leadership: one short line each, backed by a journey entry. No mentoring or team-lead claims.
+const leadership: { title: string; text: string; entry?: string }[] = [
+  { title: 'Conventions other people write to', text: "I wrote the warehouse's layer rules and the team's SQL house style.", entry: 'medallion-warehouse' },
+  { title: 'Reviews on top of diff', text: 'Main reviewer of the whole data repo. I check what else a change could slow down, cost or break.' },
+  { title: 'One definition per metric', text: 'Each company KPI is defined once as code, so every team gets the same number.', entry: 'semantic-layer' },
+  { title: 'Self-service instead of tickets', text: 'Access, table syncs and deploys no longer wait on a data engineer.', entry: 'data-ops-self-service' },
+  { title: 'Risky changes go out in stages', text: 'Old and new run side by side, and I know how to roll back before I start.', entry: 'realtime-underwriting' },
+  { title: 'Clear ownership', text: 'Business rules that belong to the backend go to the backend team, and the data team keeps its own.' },
+  { title: 'Build before buy', text: 'We build or find a workaround, and buy only when it is clearly worth it.', entry: 'deploy-platform' },
+  { title: 'No single point of failure', text: 'Either of us can deploy, debug and fix every system we run.' },
 ];
-const entryTitle = (id: string) => entries.find((e) => e.id === id)!.title;
 
 // Three weight levels: featured (cards), standard (expandable rows), compact (one line, expands).
 const levelOf = (e: Entry) => {
@@ -83,9 +54,9 @@ const levelOf = (e: Entry) => {
 
 <Base>
   <!-- Hero: the claim, with every figure footnoted -->
-  <section class="hero pt-16 sm:pt-24">
-    <h1 class="display text-[clamp(3.5rem,12vw,7.5rem)]">Richard<br />Dharmawan</h1>
-    <p class="mt-5 text-lg text-muted">Senior Data Engineer · JULO, Jakarta</p>
+  <section class="hero pt-10 sm:pt-14">
+    <h1 class="display text-[clamp(2.5rem,6vw,3.75rem)]">Richard Dharmawan</h1>
+    <p class="mt-3 text-lg text-muted">Senior Data Engineer · JULO, Jakarta · 8 years building systems</p>
     <div class="mt-6 flex flex-wrap items-center gap-3">
       <a href="mailto:richard.dharmawan@gmail.com" class="cta cta-primary">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
@@ -95,18 +66,15 @@ const levelOf = (e: Entry) => {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></svg>
         CV
       </a>
-      <a href="https://www.linkedin.com/in/rdxz2" class="cta" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.064 2.064 0 1 1 0-4.128 2.064 2.064 0 0 1 0 4.128zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
-        LinkedIn
-      </a>
       <a href="https://wa.me/6287888164619" class="cta" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
         WhatsApp
       </a>
     </div>
-    <p class="mt-3 text-sm text-muted">Happy to talk about Lead data engineering roles.</p>
+    <p class="mt-3 text-sm text-muted">Happy to talk about Lead roles.</p>
+    <p class="mt-1 text-sm text-muted">On-site or remote · Jakarta / Tangerang · Bahasa &amp; English</p>
 
-    <div class="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
+    <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
       <div class="hero-in-left">
         <div class="text-[1.25rem] leading-[1.55] sm:text-[1.4rem]">
           <p>{lede}</p>
@@ -120,7 +88,7 @@ const levelOf = (e: Entry) => {
                       part
                     ) : (
                       <a href={`#note-${part.id}`} class="figure font-semibold whitespace-nowrap hover:text-accent">
-                        {/* The prose already says "cut ... by" / "reduced ... by", so drop the leading sign */}
+                        {/* The prose carries the direction ("cut ... by"), so drop any leading sign */}
                         {m[part.id].display.replace(/^[−+]/, '')}
                         <sup class="ml-0.5 text-[0.6em] font-bold text-accent">{notes.indexOf(part.id) + 1}</sup>
                       </a>
@@ -130,19 +98,6 @@ const levelOf = (e: Entry) => {
               ))
             }
           </ul>
-        </div>
-
-        <div class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3">
-          {
-            vizNotes.map((id) => (
-              <div>
-                <MetricViz id={id} size="sm" />
-                <p class="mt-2 text-sm text-muted">
-                  <span class="figure font-semibold text-fg">{m[id].display}</span> {m[id].label}
-                </p>
-              </div>
-            ))
-          }
         </div>
       </div>
 
@@ -177,11 +132,36 @@ const levelOf = (e: Entry) => {
     <PlatformMap />
   </section>
 
+  <!-- Leadership -->
+  <section id="leadership" class="mt-28 scroll-mt-8">
+    <SectionHeading id="leadership">Leadership</SectionHeading>
+    <p class="mt-3 max-w-2xl text-muted">
+      Two data engineers serve the whole company, so I lead through the conventions and tools that other people work with every day while maintaining the whole stacks.
+    </p>
+    <dl class="mt-8 grid max-w-4xl gap-x-10 gap-y-6 sm:grid-cols-2">
+      {
+        leadership.map((p) => (
+          <div>
+            <dt class="font-semibold">{p.title}</dt>
+            <dd class="mt-1 leading-relaxed text-muted">
+              {p.text}
+              {p.entry && (
+                <a href={`#entry-${p.entry}`} data-entry={p.entry} class="ink-link mt-1 block w-fit text-sm">
+                  {entries.find((e) => e.id === p.entry)!.title}
+                </a>
+              )}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
   <!-- Journey -->
   <section id="journey" class="mt-28 scroll-mt-8">
     <SectionHeading id="journey">The journey</SectionHeading>
     <p class="mt-3 max-w-2xl text-muted">
-      Everything I've done at JULO and before: what I built / co-owned / learned the hard way, and
+      Everything I've done at JULO and before: what I built / co-owned / learned the hard way, 
       what I shipped and then retired. Open any entry for the details.
     </p>
     <p class="mt-2 max-w-2xl text-sm text-muted">
@@ -355,40 +335,10 @@ const levelOf = (e: Entry) => {
     </div>
   </section>
 
-  <!-- How I work -->
-  <section id="how-i-work" class="mt-28 scroll-mt-8">
-    <SectionHeading id="how-i-work">How I work</SectionHeading>
-    <dl class="mt-8 grid max-w-4xl gap-x-10 gap-y-7 sm:grid-cols-2">
-      {
-        howIWork.map((h) => (
-          <div>
-            <dt class="font-semibold">{h.title}</dt>
-            <dd class="mt-1 leading-relaxed text-muted">
-              {h.text}
-              {h.entries && (
-                <span class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                  {h.entries.map((id) => (
-                    <a href={`#entry-${id}`} data-entry={id} class="ink-link">
-                      {entryTitle(id)}
-                    </a>
-                  ))}
-                </span>
-              )}
-            </dd>
-          </div>
-        ))
-      }
-    </dl>
-  </section>
-
   <!-- Side projects -->
   <section id="side-projects" class="mt-28 scroll-mt-8">
     <SectionHeading id="side-projects">On the side</SectionHeading>
     <dl class="mt-8 max-w-3xl space-y-5">
-      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
-        <dt><Badge ai /> <a href="https://github.com/rdxz2/rdxz2.github.io" class="ink-link font-semibold">This site</a></dt>
-        <dd class="text-muted">A static Astro and Tailwind site with no client framework. Every number on it is read from one data file that records how and when it was measured.</dd>
-      </div>
       <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
         <dt><Badge ai /> <span class="font-semibold">To-do app + MCP server</span></dt>
         <dd class="text-muted">A productivity tool built for myself with Claude (Django, React), with its own MCP server so Claude can plan and track my tasks with me.</dd>
@@ -396,20 +346,16 @@ const levelOf = (e: Entry) => {
       <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
         <dt><a href="https://github.com/rdxz2/demo" class="ink-link font-semibold">CDC from scratch</a></dt>
         <dd class="text-muted">
-          A hand-written Postgres pgoutput decoder streaming into BigQuery, with Airflow and Metabase around it.
+          My own Postgres change-data-capture reader, written from scratch, streaming into BigQuery with Airflow and Metabase around it.
           <details class="mt-2">
             <summary class="cursor-pointer text-sm text-accent hover:text-fg">See more</summary>
             <ul class="mt-2 list-disc space-y-1.5 pl-4 leading-relaxed marker:text-faint">
-              <li>Decodes Relation, Begin, Insert, Update, Delete and Truncate messages byte by byte straight from the Postgres replication protocol, with a bounded queue for backpressure.</li>
+              <li>Decodes pgoutput messages (Relation, Begin, Insert, Update, Delete and Truncate) byte by byte straight from the Postgres replication protocol, with a bounded queue for backpressure.</li>
               <li>Streams into BigQuery through the Storage Write API with per-table generated protobuf schemas, cutoff-timestamp merge tracking, and a synthetic loan-traffic producer.</li>
               <li>Deployed with GitHub Actions and Ansible through an IAP tunnel, alongside self-hosted Airflow and Metabase.</li>
             </ul>
           </details>
         </dd>
-      </div>
-      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
-        <dt><a href="https://github.com/rdxz2/utill" class="ink-link font-semibold">utill</a></dt>
-        <dd class="text-muted">My Python utility library for everyday data-engineering chores.</dd>
       </div>
     </dl>
   </section>

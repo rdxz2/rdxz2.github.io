@@ -1,7 +1,9 @@
 <!doctype html>
 <!--
   Source of public/richard-dharmawan-cv.pdf. Same rules as the site (see CLAUDE.md):
-  every figure is copied from src/data/metrics.json, wording and badges follow src/data/timeline.ts.
+  every figure is copied from src/data/metrics.json, wording follows src/data/timeline.ts.
+  Kept short on purpose: one bold label, what it is and one number per bullet, at most two lines each.
+  Unmarked bullets are "built". Only "co-owned" and "built solo" are tagged.
   Rebuild:
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer \
       --print-to-pdf=public/richard-dharmawan-cv.pdf cv/richard-dharmawan-cv.html
@@ -11,92 +13,81 @@
 <meta charset="utf-8">
 <title>Richard Dharmawan, CV</title>
 <style>
-  @page { size: A4; margin: 13mm 13mm 11mm; }
+  @page { size: A4; margin: 15mm 15mm 13mm; }
   :root { --blue: #3d5fae; --ink: #1d1d1f; --muted: #4a4a4f; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 8.9pt; line-height: 1.38; color: var(--ink); background: #fff;
+    font-size: 9.8pt; line-height: 1.45; color: var(--ink); background: #fff;
   }
-  .page { display: grid; grid-template-columns: 1fr 50mm; gap: 8mm; }
-  h1 { font-size: 27pt; line-height: 1.05; color: var(--blue); letter-spacing: -0.01em; }
-  .headline { margin-top: 2.5mm; font-size: 10pt; font-weight: 700; }
-  .lede { margin-top: 1.8mm; color: var(--muted); }
-  h2 { margin-top: 4.5mm; font-size: 11pt; color: var(--blue); }
+  .page { display: grid; grid-template-columns: 1fr 48mm; gap: 10mm; }
+  h1 { font-size: 28pt; line-height: 1.05; color: var(--blue); letter-spacing: -0.01em; }
+  .headline { margin-top: 2.5mm; font-size: 10.5pt; font-weight: 700; }
+  .lede { margin-top: 2mm; color: var(--muted); }
+  h2 { margin-top: 7mm; font-size: 12pt; color: var(--blue); }
   aside h2:first-child { margin-top: 2mm; }
-  h3 { margin-top: 2.4mm; font-size: 9.6pt; text-decoration: underline; text-underline-offset: 2px; }
-  h4 { margin-top: 2.6mm; font-size: 9pt; }
+  h3 { margin-top: 3mm; font-size: 10.2pt; text-decoration: underline; text-underline-offset: 2px; }
   .dates { margin-top: 0.8mm; font-style: italic; color: var(--muted); }
-  .note { font-size: 7.4pt; font-style: italic; color: var(--muted); }
-  ul { margin-top: 1mm; padding-left: 4mm; }
-  li { margin-top: 0.9mm; text-align: justify; }
+  .note { margin-top: 0.8mm; font-size: 8pt; font-style: italic; color: var(--muted); }
+  ul { margin-top: 1.5mm; padding-left: 4mm; }
+  li { margin-top: 1.8mm; }
   li::marker { color: var(--blue); }
-  aside p, aside li { text-align: left; }
-  aside ul { list-style: none; padding-left: 0; }
-  aside li { margin-top: 0.5mm; }
+  aside { font-size: 9pt; }
+  aside p { margin-top: 1.5mm; }
+  aside b { display: block; margin-top: 2.5mm; }
   a { color: inherit; text-decoration: none; }
-  .tag { font-size: 7.4pt; font-weight: 400; color: var(--muted); }
+  .tag { font-size: 8pt; font-weight: 400; color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="page">
 <main>
   <h1>Richard Dharmawan</h1>
-  <p class="headline">Senior Data Engineer // GCP Data Platforms, Automation &amp; AI-Assisted Delivery</p>
-  <p class="lede">With one other engineer, I run the data platform behind an Indonesian lending fintech: Postgres CDC → BigQuery → Metabase → real-time ML scoring, on Google Cloud. Happy to talk about Lead data engineering roles.</p>
+  <p class="headline">Senior Data Engineer // GCP Data Platforms, Automation &amp; AI&#8209;Assisted Delivery</p>
+  <p class="lede">8 years building systems. With one other engineer, I run the data platform behind an Indonesian lending fintech, from Postgres CDC to real-time ML scoring on Google Cloud. Open to Lead roles.</p>
 
   <h2>Work Experience</h2>
   <h3>Senior Data Engineer, PT JULO Teknologi Finansial</h3>
   <p class="dates">Senior Data Engineer, Nov 2023 – Present<br>Data Engineer, Oct 2021 – Nov 2023</p>
-  <p class="note">Figures as of Nov 2026. How each one was measured: rdxz2.github.io/numbers</p>
+  <p class="note">Figures as of Nov 2026, and how each was measured: rdxz2.github.io/numbers</p>
   <ul>
-    <li><b>Real-time underwriting</b> <span class="tag">(built)</span>: moved loan-application scoring off a Python 3.6 service on another team's infrastructure onto a stack the data team owns (Python 3.14, uv, Docker, Redis, one VM). The logic stayed the same. Rolled out endpoint by endpoint behind an experiment group, and 100% of scoring traffic moved with no backend change.</li>
-    <li><b>Self-service data-ops platform</b> <span class="tag">(built solo)</span>: one internal web app for data access, table syncs, file exports and deploys, with approvals and audit trails. 3,100+ requests from 120+ colleagues since Sep 2025.</li>
-    <li><b>Deploys and access governance</b> <span class="tag">(built)</span>: one audited deploy path with no long-lived keys, used by 8 of 9 data-team service repos. 100% of Metabase access sits in groups the platform manages, with grants that expire on their own.</li>
-    <li><b>Semantic layer</b> <span class="tag">(built)</span>: company KPIs defined once in dbt MetricFlow, synced into Metabase Community Edition by my Python reconciler. 94.1% of governed queries run from saved dashboards, with no SQL written.</li>
-    <li><b>AWS → Google Cloud</b> <span class="tag">(co-owned)</span>: with a teammate, migrated the Airflow codebase, infrastructure, VMs and networks. Data-platform workloads now run entirely on Google Cloud, and the data team's AWS invoice is down 98.6%.</li>
-    <li><b>CDC and medallion warehouse</b> <span class="tag">(co-owned)</span>: scaled, moved off Alibaba Cloud and operate CDC streaming 630+ Postgres tables from 20+ databases into a 250+ TiB BigQuery warehouse. Main reviewer of the dbt warehouse and author of its layer contracts and CI/CD. 86.6% of its columns are documented.</li>
-    <li><b>ML in production</b> <span class="tag">(built)</span>: a new model version went live, batch or real-time, in 90.4% of quarters since I joined. Pruned AutoGluon artifacts by 71% with identical predictions.</li>
-    <li><b>FinOps</b> <span class="tag">(built)</span>: halved the reserved BigQuery slot capacity (−50%) by moving BI traffic to on-demand billing. Moved training VMs to Spot.</li>
+    <li><b>Self-service data-ops platform</b> <span class="tag">(built solo)</span>: access, table syncs and deploys without a ticket. 3,100+ requests from 120+ colleagues since Sep 2025.</li>
+    <li><b>Real-time underwriting</b>: moved loan scoring off Python 3.6 onto our own stack, endpoint by endpoint. 100% of traffic moved, no backend change.</li>
+    <li><b>CDC and warehouse</b> <span class="tag">(co-owned)</span>: run CDC for 630+ Postgres tables into a 250+ TiB BigQuery warehouse. Main reviewer, and I wrote its layer rules.</li>
+    <li><b>Semantic layer</b>: company KPIs defined once as code, and synced into Metabase. 94.1% of governed queries run from saved dashboards.</li>
+    <li><b>AWS → Google Cloud</b> <span class="tag">(co-owned)</span>: moved the whole data platform with a teammate. It now runs entirely on Google Cloud.</li>
+    <li><b>ML in production</b>: a new model version went live, batch or real-time, in 90.4% of quarters since I joined.</li>
   </ul>
 
-  <h3 style="margin-top: 3.5mm">Software Engineer, PT Indomarco Prismatama</h3>
+  <h3 style="margin-top: 4.5mm">Software Engineer, PT Indomarco Prismatama</h3>
   <p class="dates">Aug 2018 – Oct 2021</p>
   <ul>
-    <li>Built web, Android and backend systems. Introduced React, .NET Core and Git.</li>
+    <li>Built web, Android and backend apps. Introduced React, .NET Core and Git.</li>
   </ul>
 
   <h2>How I Use AI</h2>
-  <p style="margin-top: 1.2mm">I write the design and the project's guardrails, an AI coding assistant (Claude) drafts, and I review every change before it ships.</p>
   <ul>
-    <li>Built this way: the deploy platform, the real-time underwriting move, the semantic layer and Metabase access governance. I wrote the data-ops platform myself, and it is now maintained with Claude.</li>
-    <li>Wrote the guardrails and skills that AI coding assistants follow in the medallion warehouse.</li>
-    <li>Built, then retired, a BigQuery AI agent with MCP tools, a pgvector RAG library and LLM-judged evals. Lesson: an agent is only as good as the definitions under it, so I built the semantic layer first.</li>
-    <li>On the side: a to-do app with its own MCP server, so Claude plans and tracks my tasks with me, and my personal site.</li>
+    <li>I write the design and guardrails, Claude drafts, and I review every change. Built this way: underwriting, the semantic layer, deploys.</li>
+    <li>Built, then retired, a BigQuery AI agent (MCP, RAG, LLM evals). Lesson: an agent is only as good as the definitions under it.</li>
   </ul>
 </main>
 
 <aside>
   <h2>Contact</h2>
-  <p style="margin-top: 1.2mm">richard.dharmawan@gmail.com<br>+62 878 8816 4619<br>Greater Jakarta, Indonesia<br>On-site or remote<br>rdxz2.github.io<br>linkedin.com/in/rdxz2<br>github.com/rdxz2</p>
+  <p>richard.dharmawan@gmail.com<br>+62 878 8816 4619<br>Greater Jakarta, Indonesia<br>Roles in Jakarta or Tangerang,<br>on-site or remote<br>rdxz2.github.io<br>linkedin.com/in/rdxz2<br>github.com/rdxz2</p>
 
   <h2>Stack</h2>
-  <h4>Data</h4>
-  <ul><li>BigQuery</li><li>PostgreSQL (CDC)</li><li>dbt + MetricFlow</li><li>Airflow</li><li>Metabase</li><li>DuckDB, Redshift</li></ul>
-  <h4>Platform</h4>
-  <ul><li>Google Cloud: Cloud Run, Compute Engine (Spot), Shared VPC + IAP</li><li>AWS</li><li>Ansible, Docker</li><li>Linux, Git</li></ul>
-  <h4>Code</h4>
-  <ul><li>Python, SQL</li><li>Django + Celery, FastAPI</li><li>React + TypeScript</li></ul>
-  <h4>AI</h4>
-  <ul><li>Claude Code</li><li>MCP servers</li><li>Google ADK</li><li>RAG (pgvector)</li><li>LLM evals</li></ul>
-  <h4>Practices</h4>
-  <ul><li>Data modelling</li><li>Data quality + testing</li><li>Data governance</li><li>MLOps, FinOps</li></ul>
+  <p><b>Data</b>BigQuery, PostgreSQL (CDC), dbt&nbsp;+&nbsp;MetricFlow, Airflow, Metabase</p>
+  <p><b>Platform</b>Google Cloud, AWS, Ansible, Docker</p>
+  <p><b>Code</b>Python, SQL, Django&nbsp;+&nbsp;Celery, FastAPI, React</p>
+  <p><b>AI</b>Claude Code, MCP servers, RAG, LLM evals</p>
+  <p><b>Practices</b>Data modelling, data governance, MLOps, FinOps</p>
 
   <h2>Languages</h2>
-  <p style="margin-top: 1.2mm">Bahasa Indonesia (native)<br>English (full professional)</p>
+  <p>Bahasa Indonesia (native)<br>English (full professional)</p>
 
   <h2>Education</h2>
-  <p style="margin-top: 1.2mm">B.Eng. Computer Engineering<br>Universitas Multimedia Nusantara<br>2015 – 2019</p>
+  <p>B.Eng. Computer Engineering<br>Universitas Multimedia Nusantara<br>2015 – 2019</p>
 </aside>
 </div>
 </body>

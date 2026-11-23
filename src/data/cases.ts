@@ -39,7 +39,7 @@ export const cases: Case[] = [
         body: [
           'Keep the orchestration code as it is. Neither of us designed it, but it is legacy code that still does its job, so I moved it with minimal changes (imports, names, small adjustments) and no redesign. With the same code on both sides, a new business rule could ship to both systems at once.',
           'Change what runs underneath: Python 3.14 with uv, everything in Docker, deployed through our own self-service data-ops platform.',
-          'One VM instead of three instances, because the service is light: it mostly calls other services, with only small rule calculations of its own.',
+          'One VM instead of three, because the service is light: it mostly calls other services, with only small rule calculations of its own.',
           "Redis instead of RabbitMQ as the task broker, because at our traffic RabbitMQ's extra complexity wasn't worth running.",
         ],
       },
@@ -69,31 +69,33 @@ export const cases: Case[] = [
   },
   {
     slug: 'cdc',
-    entry: 'cdc-alibaba-to-gcp',
-    title: 'Moving CDC streaming from Alibaba Cloud to Google Cloud',
+    entry: 'cdc-gcp-alibaba-gcp',
+    title: 'Moving CDC streaming cross-platform',
     summary:
-      'Moved the streamers that copy every Postgres change into BigQuery from Alibaba Cloud to Google Cloud, with no data gap. A teammate designed the system and made the call to move. I scaled, migrated and run it.',
+      'Moved the streamers that copy every Postgres change into BigQuery from Alibaba Cloud (Ali) to Google Cloud (GCP), with no data gap. A teammate designed the system and made the call to move. I scaled, migrated and run it.',
     metrics: ['cdc-tables'],
     sections: [
       {
         heading: 'Context',
         body: [
-          "JULO's app databases are Postgres. A change-data-capture (CDC) pipeline reads each database's logical replication stream, writes the changes to files, loads them into append-only BigQuery log tables, and merges them into current tables every night.",
-          'The streamers ran on Alibaba Cloud and sent everything to Google Cloud over the public network. That was too slow to keep up, so they often lagged, and a lagging replication stream puts the source database itself at risk. On top of that, every byte paid cross-cloud egress.',
+          "The Postgres databases lived in Ali. Data infrastructure already migrated into GCP. A change-data-capture (CDC) pipeline is our new feature in GCP, it reads each database's write-ahead logs (WAL) through logical replication stream and writes them into BigQuery tables",
+          "At first, CDC streamer lives in GCP, Postgres database lives in Ali. Streaming WAL cross-cloud is costly and very risky even with interconnect, replication lagged over normal traffic, public network ingress/egress is unaviodable.",
+          "We moved the streamer to Ali, the performance is much better, no lags, not additional network cost.",
+          "When the databases migrated into GCP, we moved the streamer back to the original instance in GCP, and since then everything is simple and expected."
         ],
       },
       {
         heading: 'Who did what',
         body: [
           "A teammate designed the core streamer and nightly merger, and decided to move them to Google Cloud. That's why this one is co-owned.",
-          'I migrated the streamers, including those for the largest databases, onboarded new database sources, fixed partitioned and NULL-safe incremental merges, and added daily checks on every source database that updates carry full row images.',
+          'I migrated the streamers, including those for the largest databases, onboarded new database sources, fixed partitioned and NULL-safe incremental merges.',
         ],
       },
       {
         heading: 'How we cut over',
         body: [
           'For each database, two streamers ran side by side, old and new, each on its own replication slot, both loading into BigQuery.',
-          'Duplicates in the log tables were fine: the merge keeps only the latest version of each row.',
+          'Duplicates in the log tables are fine: the merge keeps only the latest version of each row.',
           'Once both streamers had caught up with the database, we dropped the old replication slot and stopped the old streamer.',
         ],
       },
@@ -119,7 +121,7 @@ export const cases: Case[] = [
   },
   {
     slug: 'data-ops-platform',
-    entry: 'datamation-self-service',
+    entry: 'data-ops-self-service',
     title: 'A self-service data-ops platform for a two-person team',
     summary:
       'One internal web app that turned data-team tickets and command-line chores into self-service workflows with approvals and audit trails, including our own deploy pipeline.',
@@ -128,13 +130,13 @@ export const cases: Case[] = [
       {
         heading: 'Context',
         body: [
-          'Two data engineers serve the whole company. Requests for data access, table syncs, file exports and deploys used to reach us as tickets and messages, and each one was manual work: a pull request and a server login for a table sync, or a hand-granted Metabase permission.',
+          'Two data engineers serve the whole company. Requests for data access, table syncs, file exports and deploys used to reach us through Slack, and each one was manual work: a pull request, server login, terminal commands, several clicks on Metabase, anything you need to do by hand.',
         ],
       },
       {
         heading: 'What it does',
         body: [
-          'People pick a workflow, fill in what they need, and an approver signs off. Every action is logged and gets a Slack thread.',
+          'People open a menu, fill in what they need, and an approver signs off. Every action is logged and gets a Slack thread.',
           'Approving a Postgres → BigQuery table sync opens the pipeline pull request and runs the first copy.',
           'Metabase access is time-boxed: a grant revokes itself when its time is up, and every permission group in use is created and managed by the platform.',
           "It also runs file exports, temporary ML machine upgrades that downgrade at midnight, SQL formatting to the team's house style, and the semantic-layer sync into Metabase.",
@@ -143,16 +145,15 @@ export const cases: Case[] = [
       {
         heading: 'Deploys: build, not buy',
         body: [
-          "When the engineering team's CI runners were switched off company-wide, we needed our own deploy path. I compared GitHub Actions and Jenkins, then built a small Jenkins-style deploy page into the platform: pick a service → environment → git ref, and it runs.",
-          "I didn't want our deploy endpoint open to webhooks from outside, so nothing is exposed externally. Image builds that used to run on GitHub's runners now run on a deploy controller inside our own network. It fetches the code → builds and pushes the image → deploys to the VMs or Cloud Run.",
-          'That controller holds the rights to deploy everything, so it is locked down more tightly than anything else we run.',
-          'Production only accepts tagged releases and nobody gets a long-lived key. You can watch every run live, and each one is audited.',
+          "When the engineering team's CI runners were switched off company-wide, we needed our own deploy path. I'm inspired by GitHub Actions and Jenkins, then built a small Jenkins-style deploy page into the platform: pick a service → environment → git ref, and it runs e2e.",
+          "Image builds that used to run on GitHub's runners now run on our own infrastructure: fetch the code → build and push the image → deploy to VMs or Cloud Run.",
+          'You can watch every runs live along with the log, and each one is audited.',
         ],
       },
       {
         heading: 'Result',
         body: [
-          "I haven't measured hours saved. What changed is that these tasks no longer wait on a data engineer: people do them in a few clicks, guided by the page.",
+          "I haven't measured hours saved. What changed is that these tasks no longer wait on a data engineer: people do them in a few clicks, guided by the page. And the only blocker is 'me' missed those request notifications on Slack.",
         ],
       },
       {

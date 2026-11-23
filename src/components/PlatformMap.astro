@@ -17,7 +17,7 @@ const lanes: { name: string; y: number; stops: Stop[] }[] = [
     y: 70,
     stops: [
       { id: 'postgres', label: 'Postgres', sub: 'app databases' },
-      { id: 'cdc', label: 'CDC', sub: 'change log, nightly merge', role: 'co-owned', entry: 'cdc-alibaba-to-gcp' },
+      { id: 'cdc', label: 'CDC', sub: 'change log, nightly merge', role: 'co-owned', entry: 'cdc-gcp-alibaba-gcp' },
       { id: 'medallion', label: 'Medallion', sub: 'bronze, silver, gold', role: 'co-owned', entry: 'medallion-warehouse' },
       { id: 'semantic', label: 'Semantic layer', sub: 'metrics as code', role: 'built', entry: 'semantic-layer' },
       { id: 'metabase', label: 'Metabase', sub: 'self-service BI', entry: 'semantic-layer' },
@@ -38,7 +38,7 @@ const lanes: { name: string; y: number; stops: Stop[] }[] = [
     name: 'Platform',
     y: 380,
     stops: [
-      { id: 'datamation', label: 'Data-ops app', sub: 'self-service ops', role: 'built', entry: 'datamation-self-service' },
+      { id: 'data-ops', label: 'Data-ops app', sub: 'self-service ops', role: 'built', entry: 'data-ops-self-service' },
       { id: 'deploys', label: 'Deploys', sub: 'one path, audited', role: 'built', entry: 'deploy-platform' },
       { id: 'airflow', label: 'Airflow', sub: 'batch + ML jobs' },
       { id: 'ansible', label: 'Ansible', sub: 'shared roles, one repo', role: 'built', entry: 'deploy-platform' },
@@ -58,11 +58,11 @@ const links: [from: string, to: string, label?: string][] = [
   ['postgres', 'features'],
   ['deploys', 'models'],
   ['deploys', 'medallion'],
-  ['datamation', 'deploys'],
+  ['data-ops', 'deploys'],
   ['deploys', 'ansible'],
-  ['datamation', 'metabase'],
-  ['datamation', 'medallion'],
-  ['datamation', 'semantic'],
+  ['data-ops', 'metabase'],
+  ['data-ops', 'medallion'],
+  ['data-ops', 'semantic'],
   ['medallion', 'postgres', 'delivery'],
 ];
 
