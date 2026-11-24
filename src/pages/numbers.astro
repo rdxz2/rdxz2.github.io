@@ -15,15 +15,14 @@ const m = metrics.metrics as Record<
     <h1 class="display text-[clamp(3rem,9vw,5.5rem)]">The numbers</h1>
     <p class="mt-5 max-w-2xl text-lg leading-relaxed text-muted">
       Every number on this site, how it was measured and when. They come from production systems (warehouse metadata,
-      billing reports, dbt manifests, platform databases), measured read-only and expressed as percentages, indexed ratios
-      or rounded-down counts of our own systems, so business volumes and internal names stay private.
+      billing reports, dbt manifests, platform databases).
     </p>
 
     <dl class="mt-14 max-w-4xl space-y-10">
       {
         Object.entries(m).map(([id, x]) => (
           <div id={id} class="metric grid scroll-mt-8 gap-2 sm:grid-cols-[11rem_1fr] sm:gap-8">
-            <dt class="display figure text-[2.6rem] leading-none" style={`view-transition-name: m-${id}`}>{x.display}</dt>
+            <dt class="display figure text-[2.6rem] leading-none" data-vt={`m-${id}`}>{x.display}</dt>
             <dd class="max-w-2xl">
               <div class="text-lg font-semibold">
                 <AnchorLink id={id}>{x.label}</AnchorLink>

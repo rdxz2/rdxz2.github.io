@@ -70,25 +70,31 @@ export const cases: Case[] = [
   {
     slug: 'cdc',
     entry: 'cdc-gcp-alibaba-gcp',
-    title: 'Moving CDC streaming cross-platform',
+    title: 'Moving CDC streaming next to the databases',
     summary:
-      'Moved the streamers that copy every Postgres change into BigQuery from Alibaba Cloud (Ali) to Google Cloud (GCP), with no data gap. A teammate designed the system and made the call to move. I scaled, migrated and run it.',
+      'Moved the streamers that copy every Postgres change into BigQuery next to the databases they read, twice: Google Cloud → Alibaba Cloud, then back to Google Cloud when the databases moved there. No data gap. A teammate designed the system. I scaled, migrated and run it.',
     metrics: ['cdc-tables'],
     sections: [
       {
         heading: 'Context',
         body: [
-          "The Postgres databases lived in Ali. Data infrastructure already migrated into GCP. A change-data-capture (CDC) pipeline is our new feature in GCP, it reads each database's write-ahead logs (WAL) through logical replication stream and writes them into BigQuery tables",
-          "At first, CDC streamer lives in GCP, Postgres database lives in Ali. Streaming WAL cross-cloud is costly and very risky even with interconnect, replication lagged over normal traffic, public network ingress/egress is unaviodable.",
-          "We moved the streamer to Ali, the performance is much better, no lags, not additional network cost.",
-          "When the databases migrated into GCP, we moved the streamer back to the original instance in GCP, and since then everything is simple and expected."
+          "JULO's app databases are Postgres. Our change-data-capture (CDC) pipeline reads each database's write-ahead log (WAL) through a logical replication stream and loads the changes into BigQuery.",
+          'When we built it, the data infrastructure had already moved to Google Cloud, but the Postgres databases still lived in Alibaba Cloud.',
+        ],
+      },
+      {
+        heading: 'Three places it ran',
+        body: [
+          'Google Cloud, reading Alibaba Cloud: the streamer read the WAL over the public internet, through an SSH tunnel to a jumpbox and then to Postgres. Streaming WAL across clouds is costly and risky, even over an interconnect. Replication lagged even under normal traffic, and a lagging stream puts the source database itself at risk.',
+          'Inside Alibaba Cloud: we moved the streamer right next to the databases. That removed the jumpbox and the public-internet hop, the lag went away, and there was no extra network cost.',
+          'Back to Google Cloud: when the databases moved to Google Cloud, the streamer moved back with them. Since then it is Google Cloud to Google Cloud, simple and predictable.',
         ],
       },
       {
         heading: 'Who did what',
         body: [
-          "A teammate designed the core streamer and nightly merger, and decided to move them to Google Cloud. That's why this one is co-owned.",
-          'I migrated the streamers, including those for the largest databases, onboarded new database sources, fixed partitioned and NULL-safe incremental merges.',
+          "A teammate designed the core streamer and nightly merger, and made the call to move them. That's why this one is co-owned.",
+          'I migrated the streamers, including those for the largest databases, onboarded new database sources, and fixed partitioned and NULL-safe incremental merges.',
         ],
       },
       {
@@ -102,7 +108,7 @@ export const cases: Case[] = [
       {
         heading: 'Result',
         body: [
-          'Every streamer now runs on Google Cloud, next to the storage and BigQuery it loads into, and the move left no data gap.',
+          'Every streamer now runs on Google Cloud, next to both the databases it reads and the BigQuery it loads into, with no data gap.',
           'Keeping the raw change log paid off later too, because it let us rebuild tables to a point in time.',
         ],
       },
@@ -125,12 +131,12 @@ export const cases: Case[] = [
     title: 'A self-service data-ops platform for a two-person team',
     summary:
       'One internal web app that turned data-team tickets and command-line chores into self-service workflows with approvals and audit trails, including our own deploy pipeline.',
-    metrics: ['self-service-users', 'self-service-requests', 'deploy-coverage', 'metabase-managed-access'],
+    metrics: ['self-service-users', 'self-service-requests', 'access-decision-time', 'deploy-coverage', 'metabase-managed-access'],
     sections: [
       {
         heading: 'Context',
         body: [
-          'Two data engineers serve the whole company. Requests for data access, table syncs, file exports and deploys used to reach us through Slack, and each one was manual work: a pull request, server login, terminal commands, several clicks on Metabase, anything you need to do by hand.',
+          'Two data engineers serve the whole company. Requests for data access, table syncs, file exports and deploys used to reach us through Slack, and each one was manual work: a pull request, a server login, terminal commands or several clicks in Metabase.',
         ],
       },
       {
@@ -145,15 +151,16 @@ export const cases: Case[] = [
       {
         heading: 'Deploys: build, not buy',
         body: [
-          "When the engineering team's CI runners were switched off company-wide, we needed our own deploy path. I'm inspired by GitHub Actions and Jenkins, then built a small Jenkins-style deploy page into the platform: pick a service → environment → git ref, and it runs e2e.",
+          "When the engineering team's CI runners were switched off company-wide, we needed our own deploy path. I took ideas from GitHub Actions and Jenkins and built a small Jenkins-style deploy page into the platform: pick a service → environment → git ref, and it runs.",
           "Image builds that used to run on GitHub's runners now run on our own infrastructure: fetch the code → build and push the image → deploy to VMs or Cloud Run.",
-          'You can watch every runs live along with the log, and each one is audited.',
+          'You can watch every run live with its log, and each one is audited.',
         ],
       },
       {
         heading: 'Result',
         body: [
-          "I haven't measured hours saved. What changed is that these tasks no longer wait on a data engineer: people do them in a few clicks, guided by the page. And the only blocker is 'me' missed those request notifications on Slack.",
+          "I haven't measured hours saved. What changed is that these tasks no longer wait on a data engineer: people do them in a few clicks, guided by the page.",
+          'Access requests that need an approver are timed from request to decision, so how long people wait is measured (see the numbers at the top).',
         ],
       },
       {

@@ -15,13 +15,13 @@ const m = metrics.metrics as Record<
   { display: string; label: string; method: string; window: string; as_of: string; viz?: unknown }
 >;
 
-// The hero: one value sentence, then three wins, leverage first. Each figure comes from metrics.json and carries a numbered note with its method.
+// The hero: one value sentence, then three wins, leverage first. Each figure comes from metrics.json and carries a numbered note with its label (the method lives on the numbers page).
 const lede =
   'With one other engineer, I run the data platform behind an Indonesian lending fintech: Postgres CDC → BigQuery → Metabase → real-time ML scoring, on Google Cloud.';
 const wins: (string | { id: string })[][] = [
   ['Kept ', { id: 'cdc-tables' }, ' Postgres tables streaming into a ', { id: 'warehouse-size' }, ' BigQuery warehouse.'],
   ['Built the self-service platform that replaced data-team tickets for access, table syncs and deploys: ', { id: 'self-service-requests' }, ' requests from ', { id: 'self-service-users' }, ' colleagues so far.'],
-  ['Moved real-time loan underwriting off a Python 3.6 stack onto one we owned, endpoint by endpoint: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
+  ['Moved real-time loan underwriting off a Python 3.6 stack onto one we own, endpoint by endpoint: ', { id: 'underwriting-cutover' }, ' of scoring traffic moved, with no backend change.'],
 ];
 const notes = wins.flat().filter((p) => typeof p !== 'string').map((p) => p.id);
 
@@ -34,7 +34,7 @@ const featuredCount = entries.filter((e) => e.featured).length;
 // Leadership: one short line each, backed by a journey entry. No mentoring or team-lead claims.
 const leadership: { title: string; text: string; entry?: string }[] = [
   { title: 'Conventions other people write to', text: "I wrote the warehouse's layer rules and the team's SQL house style.", entry: 'medallion-warehouse' },
-  { title: 'Reviews on top of diff', text: 'Main reviewer of the whole data repo. I check what else a change could slow down, cost or break.' },
+  { title: 'Reviews look past the diff', text: 'Main reviewer of the whole data repo. I check what else a change could slow down, cost or break.' },
   { title: 'One definition per metric', text: 'Each company KPI is defined once as code, so every team gets the same number.', entry: 'semantic-layer' },
   { title: 'Self-service instead of tickets', text: 'Access, table syncs and deploys no longer wait on a data engineer.', entry: 'data-ops-self-service' },
   { title: 'Risky changes go out in stages', text: 'Old and new run side by side, and I know how to roll back before I start.', entry: 'realtime-underwriting' },
@@ -66,12 +66,16 @@ const levelOf = (e: Entry) => {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M12 18v-6" /><path d="m9 15 3 3 3-3" /></svg>
         CV
       </a>
+      <a href="https://www.linkedin.com/in/rdxz2" class="cta" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.064 2.064 0 1 1 0-4.128 2.064 2.064 0 0 1 0 4.128zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+        LinkedIn
+      </a>
       <a href="https://wa.me/6287888164619" class="cta" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg>
         WhatsApp
       </a>
     </div>
-    <p class="mt-3 text-sm text-muted">Happy to talk about Lead roles.</p>
+    <p class="mt-3 text-sm text-muted">Open to Lead Data Engineer roles.</p>
     <p class="mt-1 text-sm text-muted">On-site or remote · Jakarta / Tangerang · Bahasa &amp; English</p>
 
     <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-14">
@@ -101,17 +105,17 @@ const levelOf = (e: Entry) => {
         </div>
       </div>
 
-      <aside aria-label="How these numbers were measured" class="hero-in-right lg:border-l lg:border-line lg:pl-6">
+      <aside aria-label="What these numbers are" class="hero-in-right lg:border-l lg:border-line lg:pl-6">
         <ol class="space-y-4 text-sm leading-relaxed">
           {
             notes.map((id, i) => (
               <li id={`note-${id}`} class="note grid scroll-mt-8 grid-cols-[1.25rem_1fr]">
                 <span class="figure font-bold text-accent">{i + 1}</span>
                 <div>
-                  <span class="figure font-semibold" style={`view-transition-name: m-${id}`}>
+                  <span class="figure font-semibold" data-vt={`m-${id}`}>
                     {m[id].display}
                   </span>{' '}
-                  {m[id].label}. <span class="text-muted">{m[id].method}</span>
+                  {m[id].label}.
                 </div>
               </li>
             ))
@@ -136,7 +140,7 @@ const levelOf = (e: Entry) => {
   <section id="leadership" class="mt-28 scroll-mt-8">
     <SectionHeading id="leadership">Leadership</SectionHeading>
     <p class="mt-3 max-w-2xl text-muted">
-      Two data engineers serve the whole company, so I lead through the conventions and tools that other people work with every day while maintaining the whole stacks.
+      Two data engineers serve the whole company, so I lead through the conventions and tools that other people work with every day while maintaining the whole stack.
     </p>
     <dl class="mt-8 grid max-w-4xl gap-x-10 gap-y-6 sm:grid-cols-2">
       {
@@ -340,10 +344,6 @@ const levelOf = (e: Entry) => {
     <SectionHeading id="side-projects">On the side</SectionHeading>
     <dl class="mt-8 max-w-3xl space-y-5">
       <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
-        <dt><Badge ai /> <span class="font-semibold">To-do app + MCP server</span></dt>
-        <dd class="text-muted">A productivity tool built for myself with Claude (Django, React), with its own MCP server so Claude can plan and track my tasks with me.</dd>
-      </div>
-      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
         <dt><a href="https://github.com/rdxz2/demo" class="ink-link font-semibold">CDC from scratch</a></dt>
         <dd class="text-muted">
           My own Postgres change-data-capture reader, written from scratch, streaming into BigQuery with Airflow and Metabase around it.
@@ -356,6 +356,10 @@ const levelOf = (e: Entry) => {
             </ul>
           </details>
         </dd>
+      </div>
+      <div class="grid gap-1 sm:grid-cols-[13rem_1fr] sm:gap-6">
+        <dt><a href="https://github.com/rdxz2/utill" class="ink-link font-semibold">utill</a></dt>
+        <dd class="text-muted">My Python utility library for everyday data-engineering chores.</dd>
       </div>
     </dl>
   </section>

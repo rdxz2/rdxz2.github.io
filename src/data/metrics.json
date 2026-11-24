@@ -120,18 +120,31 @@
       "as_of": "2026-11-17"
     },
     "self-service-users": {
-      "display": "120+",
+      "display": "110+",
       "label": "colleagues have used a self-service data workflow since launch",
-      "method": "Distinct people who submitted at least one workflow request in the self-service data-ops platform since it launched in September 2025 (124), from the platform's own database.",
-      "window": "2025-09 to 2026-11-17",
-      "as_of": "2026-11-17"
+      "method": "Distinct people who submitted at least one workflow request in the self-service data-ops platform since it launched in September 2025 (119), from the platform's own database. SQL formatting is not counted.",
+      "window": "2025-09 to 2026-11-24",
+      "as_of": "2026-11-24"
     },
     "self-service-requests": {
-      "display": "3,100+",
+      "display": "1,800+",
       "label": "self-service requests: data access, table syncs, file exports, deploys and more",
-      "method": "Requests submitted through the self-service data-ops platform since it launched in September 2025 (3,179), from the platform's own database. Each one is a task that used to go through a data engineer.",
-      "window": "2025-09 to 2026-11-17",
-      "as_of": "2026-11-17"
+      "method": "Requests submitted through the self-service data-ops platform since it launched in September 2025 (1,848), from the platform's own database. Each one is a task that used to go through a data engineer. SQL formatting, a one-click tool, is not counted.",
+      "window": "2025-09 to 2026-11-24",
+      "as_of": "2026-11-24"
+    },
+    "access-decision-time": {
+      "display": "19 min",
+      "label": "median time from a Metabase access request to the approver's decision",
+      "method": "Metabase access requests in the self-service data-ops platform that someone other than the requester approved or rejected (521 since December 2025), timed from the request to the decision, from the platform's own database. 67.4% got a decision within an hour and 90.8% within a day. There is no before number: these requests used to come through Slack, where nobody tracked them.",
+      "window": "2025-12 to 2026-11-24",
+      "as_of": "2026-11-24",
+      "viz": {
+        "type": "waffle",
+        "total": 100,
+        "on": 90,
+        "caption": "90.8% of access requests got a decision within a day (filled)"
+      }
     },
     "underwriting-cutover": {
       "display": "100%",

@@ -40,6 +40,19 @@ const lastUpdated = new Date(Object.values(metrics.metrics).map((x) => x.as_of).
       document.documentElement.classList.add('js');
       // Arrived from another page of the site by view transition: skip first-load entrance animations
       addEventListener('pagereveal', (e) => e.viewTransition && document.documentElement.classList.add('vt-arrival'));
+      // Figures shared between pages ([data-vt]) morph across a page navigation, but only the ones on screen,
+      // so an off-screen figure never flies in from outside the viewport. Names are set per transition, then cleared.
+      const nameVisible = (e) => {
+        if (!e.viewTransition) return;
+        const named = [...document.querySelectorAll('[data-vt]')].filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.height > 0 && r.bottom > 0 && r.top < innerHeight;
+        });
+        named.forEach((el) => (el.style.viewTransitionName = el.dataset.vt));
+        e.viewTransition.finished.finally(() => named.forEach((el) => (el.style.viewTransitionName = '')));
+      };
+      addEventListener('pageswap', nameVisible);
+      addEventListener('pagereveal', nameVisible);
       try {
         if (localStorage.getItem('theme') === 'dark') document.documentElement.dataset.theme = 'dark';
       } catch {}
@@ -82,6 +95,7 @@ const lastUpdated = new Date(Object.values(metrics.metrics).map((x) => x.as_of).
       <span class="flex flex-wrap gap-5">
         <a href="mailto:richard.dharmawan@gmail.com" class="hover:text-fg">Email</a>
         <a href="/richard-dharmawan-cv.pdf" class="hover:text-fg" target="_blank" rel="noopener">CV</a>
+        <a href="https://www.linkedin.com/in/rdxz2" class="hover:text-fg">LinkedIn</a>
         <a href="https://wa.me/6287888164619" class="hover:text-fg">WhatsApp</a>
         <a href="https://github.com/rdxz2" class="hover:text-fg">GitHub</a>
       </span>
